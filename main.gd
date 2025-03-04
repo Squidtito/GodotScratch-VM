@@ -61,6 +61,7 @@ func create_sprites():
 			print(Sprite.data.currentCostume)
 			Costumes.frame = int(Sprite.data.currentCostume)
 			if not target.isStage:
+				Sprite.rotation_degrees = Sprite.data.direction-90
 				Sprite.visible = Sprite.data.visible
 				Sprite.position = Vector2(Sprite.data.x,Sprite.data.y*-1)
 				Sprite.z_index = Sprite.data.layerOrder

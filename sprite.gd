@@ -35,6 +35,7 @@ func start(event):
 			while 1:
 				block_data = data.blocks[current_block]
 				call_deferred(block_data.opcode, block_data.inputs,block_data.fields)
+				#callv(block_data.opcode, [block_data.inputs,block_data.fields])
 				if block_data.opcode == "sound_playuntildone":
 					sound_play(block_data.inputs,block_data.fields)
 					var soundnode : AudioStreamPlayer = get_node_or_null(data.blocks[block_data.inputs.SOUND_MENU[1]].fields.SOUND_MENU[0])
@@ -65,7 +66,7 @@ func start(event):
 				break
 			await Engine.get_main_loop().process_frame
 
-func center_costume():
+func center_costume() -> void:
 	var costumefilename
 	if data.costumes[costumes.frame].has("md5ext"):
 		costumefilename = data.costumes[costumes.frame].md5ext
@@ -81,22 +82,22 @@ func center_costume():
 						data.costumes[costumes.frame].rotationCenterY * -1  # Fix: Use -1 instead of 0
 					)
 
-func control_wait(_inputs, _fields):
+func control_wait(_inputs, _fields) -> void:
 	pass
-func control_forever(_inputs, _fields):
+func control_forever(_inputs, _fields) -> void:
 	pass
 
-func motion_pointindirection(inputs, _fields):
+func motion_pointindirection(inputs, _fields) -> void:
 	rotation_degrees = int(inputs.DIRECTION[1][1])-90
-func motion_turnright(inputs, _fields):
+func motion_turnright(inputs, _fields) -> void:
 	rotation_degrees+=int(inputs.DEGREES[1][1])
-func motion_turnleft(inputs, _fields):
+func motion_turnleft(inputs, _fields) -> void:
 	rotation_degrees-=int(inputs.DEGREES[1][1])
-func motion_movesteps(inputs, _fields):
+func motion_movesteps(inputs, _fields) -> void:
 	position+=Vector2(int(inputs.STEPS[1][1]),0).rotated(rotation)
-func motion_gotoxy(inputs, _fields):
+func motion_gotoxy(inputs, _fields) -> void:
 	position = Vector2(int(inputs.X[1][1]),-int(inputs.Y[1][1]))
-func motion_glidesecstoxy(inputs, _fields):
+func motion_glidesecstoxy(inputs, _fields) -> void:
 	var target_position = Vector2(int(inputs.X[1][1]), -int(inputs.Y[1][1]))
 	var start_position = position
 	
@@ -123,7 +124,7 @@ func motion_glidesecstoxy(inputs, _fields):
 			break
 
 	
-func looks_nextcostume(_inputs, _fields):
+func looks_nextcostume(_inputs, _fields) -> void:
 	if costumes.frame == costumes.sprite_frames.get_frame_count("default")-1:
 		costumes.frame=0
 	else:
@@ -133,27 +134,27 @@ func looks_nextcostume(_inputs, _fields):
 	elif data.costumes[costumes.frame].dataFormat == "png":
 		costumes.scale = Vector2(0.5,0.5)
 	center_costume()
-func looks_switchcostumeto(inputs, _fields):
+func looks_switchcostumeto(inputs, _fields) -> void:
 	costumes.frame=costume_names.find(inputs.COSTUME[1])
 	center_costume()
-func looks_seteffectto(inputs, fields):
+func looks_seteffectto(inputs, fields) -> void:
 	if fields.EFFECT[0] == "GHOST":
 		modulate = Color(1,1,1,1-float(inputs.VALUE[1][1])/100)
-func looks_hide(_inputs, _fields):
+func looks_hide(_inputs, _fields) -> void:
 	visible = false
-func looks_show(_inputs, _fields):
+func looks_show(_inputs, _fields) -> void:
 	visible = true
-func looks_setsizeto(inputs, _fields):
+func looks_setsizeto(inputs, _fields) -> void:
 	scale = Vector2(1,1)*(float(inputs.SIZE[1][1])/100)
-func looks_changesizeby(inputs, _fields):
+func looks_changesizeby(inputs, _fields) -> void:
 	scale += Vector2(1,1)*(float(inputs.CHANGE[1][1])/100)
 	
-func event_broadcast(inputs, _fields):
+func event_broadcast(inputs, _fields) -> void:
 	$'../'.broadcast(inputs.BROADCAST_INPUT[1][2])
-func event_broadcastandwait(inputs, _fields): # need to make work as intended
+func event_broadcastandwait(inputs, _fields) -> void: # need to make work as intended
 	$'../'.broadcast(inputs.BROADCAST_INPUT[1][2])
 
-func sound_playuntildone(_inputs, _fields):
+func sound_playuntildone(_inputs, _fields) -> void:
 	pass
 func sound_play(inputs, _fields):
 	print("heh" +inputs.SOUND_MENU[1][1])
@@ -163,7 +164,7 @@ func sound_play(inputs, _fields):
 	if sound != null:
 		sound.play()
 
-func execute_broadcast(broadcast):
+func execute_broadcast(broadcast) -> void:
 	#for receivers in broadcast_receivers:
 	print("executing")
 	if broadcast_receivers.has(broadcast):

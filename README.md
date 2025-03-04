@@ -19,6 +19,8 @@ This is a repository trying to recreate the ScratchVM within Godot
     Custom blocks
     Support for round blocks
     Text in SVGs
+    If statements
+    Any kind of loop (except forever loops)
     (And a lot more, these are just some examples)
 
 Sorry if this README is awful, I don't know what I'm doing :D

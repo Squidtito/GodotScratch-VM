@@ -18,6 +18,7 @@ This is a repository trying to recreate the ScratchVM within Godot
     Variables
     Custom blocks
     Support for round blocks
+    Text in SVGs
     (And a lot more, these are just some examples)
 
 Sorry if this README is awful, I don't know what I'm doing :D

@@ -68,7 +68,7 @@ func create_sprites():
 			Sprite.events_search()
 			add_child(Sprite)
 			
-func broadcast(broadcast):
+func broadcast(sendbroadcast):
 	for sprite in get_children():
 		if not sprite.name == "Camera2D":
-			sprite.execute_broadcast(broadcast)
+			sprite.execute_broadcast(sendbroadcast)

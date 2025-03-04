@@ -8,15 +8,16 @@ var broadcast_receivers : Dictionary = {}
 
 func events_search() -> void:
 	for block in data.blocks:
-		if typeof(data.blocks[block]) != TYPE_ARRAY:
-			if data.blocks[block].opcode == "event_whenflagclicked":
+		var block_data = data.blocks[block]
+		if typeof(block_data) != TYPE_ARRAY:
+			if block_data.opcode == "event_whenflagclicked":
 				flagclicked.append(block)
 				thread_events.append(Thread.new())
-			elif data.blocks[block].opcode == "event_whenbroadcastreceived":
-				print(data.blocks[block])
-				if not broadcast_receivers.has(data.blocks[block].fields.BROADCAST_OPTION[1]):
-					broadcast_receivers.get_or_add(data.blocks[block].fields.BROADCAST_OPTION[1], [])
-				broadcast_receivers[data.blocks[block].fields.BROADCAST_OPTION[1]].append(block)
+			elif block_data.opcode == "event_whenbroadcastreceived":
+				print(block_data)
+				if not broadcast_receivers.has(block_data.fields.BROADCAST_OPTION[1]):
+					broadcast_receivers.get_or_add(block_data.fields.BROADCAST_OPTION[1], [])
+				broadcast_receivers[block_data.fields.BROADCAST_OPTION[1]].append(block)
 
 func _ready() -> void:
 	set_process(false)
@@ -28,23 +29,25 @@ func start(event):
 	var active : bool = true
 	var current_block
 	var loop:String = ""
+	var block_data
 	current_block = data.blocks[event].next
 	while active:
 			while 1:
-				call_deferred(data.blocks[current_block].opcode, data.blocks[current_block].inputs,data.blocks[current_block].fields)
-				if data.blocks[current_block].opcode == "sound_playuntildone":
-					sound_play(data.blocks[current_block].inputs,data.blocks[current_block].fields)
-					var soundnode : AudioStreamPlayer = get_node_or_null(data.blocks[data.blocks[current_block].inputs.SOUND_MENU[1]].fields.SOUND_MENU[0])
+				block_data = data.blocks[current_block]
+				call_deferred(block_data.opcode, block_data.inputs,block_data.fields)
+				if block_data.opcode == "sound_playuntildone":
+					sound_play(block_data.inputs,block_data.fields)
+					var soundnode : AudioStreamPlayer = get_node_or_null(data.blocks[block_data.inputs.SOUND_MENU[1]].fields.SOUND_MENU[0])
 					if soundnode != null:
 						await get_tree().create_timer(soundnode.stream.get_length()).timeout
 					
-				if data.blocks[current_block].opcode == "motion_glidesecstoxy":
-					await get_tree().create_timer(float(data.blocks[current_block].inputs.SECS[1][1])).timeout
-				if data.blocks[current_block].opcode == "control_wait": #I don't know how to make it wait from another funcion... it doesn't work...
-					await get_tree().create_timer(clampf(float(data.blocks[current_block].inputs.DURATION[1][1]),0.001,9999999999)).timeout
-				if data.blocks[current_block].next == null:
-					if data.blocks[current_block].opcode == "control_forever":
-						current_block = data.blocks[current_block].inputs.SUBSTACK[1]
+				if block_data.opcode == "motion_glidesecstoxy":
+					await get_tree().create_timer(float(block_data.inputs.SECS[1][1])).timeout
+				if block_data.opcode == "control_wait": #I don't know how to make it wait from another funcion... it doesn't work...
+					await get_tree().create_timer(clampf(float(block_data.inputs.DURATION[1][1]),0.001,9999999999)).timeout
+				if block_data.next == null:
+					if block_data.opcode == "control_forever":
+						current_block = block_data.inputs.SUBSTACK[1]
 						loop = current_block
 					else:
 						if loop != "":
@@ -54,8 +57,8 @@ func start(event):
 							active = false
 							break
 				else:
-					current_block = data.blocks[current_block].next
-					print(str(data.blocks[current_block].opcode)+" | "+str(data.blocks[current_block].inputs))
+					current_block = block_data.next
+					print(str(block_data.opcode)+" | "+str(block_data.inputs))
 				if active == false:
 					break
 			if active == false:
@@ -118,7 +121,7 @@ func motion_glidesecstoxy(inputs, _fields):
 			break
 
 	
-func looks_nextcostume(_inputs, fields):
+func looks_nextcostume(_inputs, _fields):
 	if costumes.frame == costumes.sprite_frames.get_frame_count("default")-1:
 		costumes.frame=0
 	else:
@@ -128,12 +131,12 @@ func looks_nextcostume(_inputs, fields):
 	elif data.costumes[costumes.frame].dataFormat == "png":
 		costumes.scale = Vector2(0.5,0.5)
 	center_costume()
-func looks_switchcostumeto(inputs, fields):
+func looks_switchcostumeto(inputs, _fields):
 	costumes.frame=costume_names.find(inputs.COSTUME[1])
 	center_costume()
 func looks_seteffectto(inputs, fields):
 	if fields.EFFECT[0] == "GHOST":
-		modulate = Color(1,1,1,1-int(inputs.VALUE[1][1])/100)
+		modulate = Color(1,1,1,1-float(inputs.VALUE[1][1])/100)
 func looks_hide(_inputs, _fields):
 	visible = false
 func looks_show(_inputs, _fields):

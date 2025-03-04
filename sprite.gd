@@ -7,16 +7,7 @@ var thread_events : Array = []
 var broadcast_receivers : Dictionary = {}
 
 func events_search() -> void:
-	#print(broadcast_receivers)
-	#print(data.blocks)
 	for block in data.blocks:
-		#print(data.blocks[block])
-		
-		#if typeof(data.blocks[block]) is Array:
-		#	print("OH DADDY")
-		#print("please")
-		#print(data.blocks[block])
-		#print(name)
 		if typeof(data.blocks[block]) != TYPE_ARRAY:
 			if data.blocks[block].opcode == "event_whenflagclicked":
 				flagclicked.append(block)
@@ -25,10 +16,7 @@ func events_search() -> void:
 				print(data.blocks[block])
 				if not broadcast_receivers.has(data.blocks[block].fields.BROADCAST_OPTION[1]):
 					broadcast_receivers.get_or_add(data.blocks[block].fields.BROADCAST_OPTION[1], [])
-				#broadcast_recievers.set(data.blocks[block].fields.BROADCAST_OPTION[1],)
 				broadcast_receivers[data.blocks[block].fields.BROADCAST_OPTION[1]].append(block)
-				
-	#print(flagclicked)
 
 func _ready() -> void:
 	set_process(false)
@@ -42,12 +30,7 @@ func start(event):
 	var loop:String = ""
 	current_block = data.blocks[event].next
 	while active:
-			#print(data.blocks[current_block].opcode)
 			while 1:
-				#if data.blocks[current_block].opcode != "control_if":
-				#if typeof(data.blocks[current_block]) != TYPE_ARRAY:
-				#print("hehe")
-				#print(data.blocks[current_block])
 				call_deferred(data.blocks[current_block].opcode, data.blocks[current_block].inputs,data.blocks[current_block].fields)
 				if data.blocks[current_block].opcode == "sound_playuntildone":
 					sound_play(data.blocks[current_block].inputs,data.blocks[current_block].fields)
@@ -63,8 +46,6 @@ func start(event):
 					if data.blocks[current_block].opcode == "control_forever":
 						current_block = data.blocks[current_block].inputs.SUBSTACK[1]
 						loop = current_block
-					#elif data.blocks[current_block].next == null:
-					#	pass
 					else:
 						if loop != "":
 							current_block = loop
@@ -77,12 +58,8 @@ func start(event):
 					print(str(data.blocks[current_block].opcode)+" | "+str(data.blocks[current_block].inputs))
 				if active == false:
 					break
-				#await get_tree().create_timer(int(1)).timeout
-			#await get_tree().create_timer(int(1)).timeout
-			#print("BALLS")
 			if active == false:
 				break
-			#print(active)
 			await Engine.get_main_loop().process_frame
 
 func center_costume():
@@ -103,7 +80,6 @@ func center_costume():
 
 func control_wait(_inputs, _fields):
 	pass
-	#await get_tree().create_timer(int(1)).timeout
 func control_forever(_inputs, _fields):
 	pass
 	
@@ -152,12 +128,9 @@ func looks_nextcostume(_inputs, fields):
 	elif data.costumes[costumes.frame].dataFormat == "png":
 		costumes.scale = Vector2(0.5,0.5)
 	center_costume()
-	#costumes.offset = Vector2(data.costumes[costumes.frame].rotationCenterX,data.costumes[costumes.frame].rotationCenterY)
 func looks_switchcostumeto(inputs, fields):
 	costumes.frame=costume_names.find(inputs.COSTUME[1])
 	center_costume()
-	#position -= Vector2(data.costumes[costumes.frame].rotationCenterX,data.costumes[costumes.frame].rotationCenterY)
-	#costumes.offset = Vector2(data.costumes[costumes.frame].rotationCenterX,data.costumes[costumes.frame].rotationCenterY)
 func looks_seteffectto(inputs, fields):
 	if fields.EFFECT[0] == "GHOST":
 		modulate = Color(1,1,1,1-int(inputs.VALUE[1][1])/100)
@@ -193,5 +166,4 @@ func execute_broadcast(broadcast):
 		for receiver in broadcast_receivers[broadcast]:
 			var thread = Thread.new()
 			thread.start(start.bind(receiver))
-			#start(receiver)
 	pass

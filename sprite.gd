@@ -86,7 +86,12 @@ func start(event):
 			await Engine.get_main_loop().process_frame
 
 func center_costume():
-	if str(data.costumes[costumes.frame].md5ext).get_extension() == "svg":
+	var costumefilename
+	if data.costumes[costumes.frame].has("md5ext"):
+		costumefilename = data.costumes[costumes.frame].md5ext
+	else:
+		costumefilename = data.costumes[costumes.frame].assetId+".png"
+	if str(costumefilename.get_extension()) == "svg":
 		costumes.position = Vector2(
 						costumes.sprite_frames.get_frame_texture("default",costumes.frame).get_width()/2,
 						costumes.sprite_frames.get_frame_texture("default",costumes.frame).get_height()/2  # Fix: Use -1 instead of 0

@@ -6,7 +6,7 @@ var json
 func _init() -> void:
 	
 	reader = ZIPReader.new()
-	sb3 = reader.open("res://augustus poop.sb3")
+	sb3 = reader.open("res://Project.sb3")
 	json = reader.read_file("project.json").get_string_from_utf8()
 	json = JSON.parse_string(json)
 	
@@ -22,14 +22,20 @@ func create_sprites():
 				
 				var image = Image.new()
 				var error : Error
-				var imagefile = reader.read_file(costume.md5ext)
-				if str(costume.md5ext).get_extension() == "svg":
+				print(costume)
+				var costumefilename
+				if costume.has("md5ext"):
+					costumefilename = costume.md5ext
+				else:
+					costumefilename = costume.assetId+".png"
+				var imagefile = reader.read_file(costumefilename)
+				if str(costumefilename).get_extension() == "svg":
 					var TempFile = FileAccess.open("user://temp.svg", FileAccess.WRITE) 
 					TempFile.store_string(imagefile.get_string_from_utf8())
 					TempFile.close()
 
 					error = image.load("user://temp.svg")
-				elif str(costume.md5ext).get_extension() == "png":
+				elif str(costumefilename).get_extension() == "png":
 					error = image.load_png_from_buffer(imagefile)
 
 				#print(imagefile)
@@ -37,7 +43,7 @@ func create_sprites():
 					print("BRO IT FAILED")
 				else:
 					Costumes.get_sprite_frames().add_frame("default", ImageTexture.create_from_image(image))
-					Sprite.costume_names.append(costume.md5ext)
+					Sprite.costume_names.append(costumefilename)
 			for audio in target.sounds:
 				var soundfile = reader.read_file(audio.md5ext)
 				var sound

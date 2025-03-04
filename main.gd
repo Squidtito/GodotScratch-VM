@@ -6,7 +6,7 @@ var json
 func _init() -> void:
 	
 	reader = ZIPReader.new()
-	sb3 = reader.open("res://Project.sb3")
+	sb3 = reader.open("res://sb3/mouth.sb3")
 	json = reader.read_file("project.json").get_string_from_utf8()
 	json = JSON.parse_string(json)
 	
@@ -22,7 +22,7 @@ func create_sprites():
 				
 				var image = Image.new()
 				var error : Error
-				print(costume)
+				#print(costume)
 				var costumefilename
 				if costume.has("md5ext"):
 					costumefilename = costume.md5ext
@@ -43,6 +43,7 @@ func create_sprites():
 				else:
 					Costumes.get_sprite_frames().add_frame("default", ImageTexture.create_from_image(image))
 					Sprite.costume_names.append(costumefilename)
+					Sprite.costumes_humanfriendly.append(costume.name)
 			for audio in target.sounds:
 				var soundfile = reader.read_file(audio.md5ext)
 				var sound

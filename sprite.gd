@@ -1,6 +1,7 @@
 extends Node2D
 @onready var costumes = $Costumes
 var costume_names : Array = []
+var costumes_humanfriendly : Array = []
 var data
 var flagclicked : Array = []
 var thread_events : Array = []
@@ -14,7 +15,7 @@ func events_search() -> void:
 				flagclicked.append(block)
 				thread_events.append(Thread.new())
 			elif block_data.opcode == "event_whenbroadcastreceived":
-				print(block_data)
+				#print(block_data)
 				if not broadcast_receivers.has(block_data.fields.BROADCAST_OPTION[1]):
 					broadcast_receivers.get_or_add(block_data.fields.BROADCAST_OPTION[1], [])
 				broadcast_receivers[block_data.fields.BROADCAST_OPTION[1]].append(block)
@@ -59,13 +60,12 @@ func start(event):
 							break
 				else:
 					current_block = block_data.next
-					print(str(block_data.opcode)+" | "+str(block_data.inputs))
+					print(str(block_data.opcode)+" i| "+str(block_data.inputs)+" f| "+str(block_data.fields))
 				if active == false:
 					break
 			if active == false:
 				break
 			await Engine.get_main_loop().process_frame
-
 func center_costume() -> void:
 	var costumefilename
 	if data.costumes[costumes.frame].has("md5ext"):
@@ -135,7 +135,19 @@ func looks_nextcostume(_inputs, _fields) -> void:
 		costumes.scale = Vector2(0.5,0.5)
 	center_costume()
 func looks_switchcostumeto(inputs, _fields) -> void:
-	costumes.frame=costume_names.find(inputs.COSTUME[1])
+	#print(data.blocks[inputs.COSTUME[1]])
+	var help = complete_argument(inputs.COSTUME[1])
+	if typeof(help) != TYPE_STRING: #I think this may be wrong kinda? I'm so tired it's 12:42PM
+		if typeof(help[1]) == TYPE_FLOAT:
+			help = str(int(help[1]))
+		else:
+			help = help[1]
+		print(round(int(help)))
+	costumes.frame=costumes_humanfriendly.find(help)
+	print(costume_names)
+	print("clap")
+	print(help)
+	print("clap2")
 	center_costume()
 func looks_seteffectto(inputs, fields) -> void:
 	if fields.EFFECT[0] == "GHOST":
@@ -157,12 +169,15 @@ func event_broadcastandwait(inputs, _fields) -> void: # need to make work as int
 func sound_playuntildone(_inputs, _fields) -> void:
 	pass
 func sound_play(inputs, _fields):
-	print("heh" +inputs.SOUND_MENU[1][1])
-	print(data.blocks[inputs.SOUND_MENU[1]].fields.SOUND_MENU[0])
-	print("Sprite: "+name)
 	var sound = get_node_or_null(data.blocks[inputs.SOUND_MENU[1]].fields.SOUND_MENU[0])
 	if sound != null:
 		sound.play()
+func data_changevariableby(inputs, fields):
+	var variable = getvariable(fields.VARIABLE[1])
+	variable[1] = float(variable[1])+float(inputs.VALUE[1][1])
+func data_setvariableto(inputs, fields):
+	var variable = getvariable(fields.VARIABLE[1])
+	variable[1] = inputs.VALUE[1][1]
 
 func execute_broadcast(broadcast) -> void:
 	#for receivers in broadcast_receivers:
@@ -173,3 +188,28 @@ func execute_broadcast(broadcast) -> void:
 			var thread = Thread.new()
 			thread.start(start.bind(receiver))
 	pass
+func getvariable(variable):
+	if data.variables.has(variable):
+		return data.variables[variable]
+	else:
+		#print($'../Stage'.data.variables)
+		return $'../Stage'.data.variables[variable]
+func complete_argument(argument):
+	#print(argument)
+	#print(str(typeof(argument))+"what")
+	if typeof(argument) == TYPE_ARRAY:
+		print("DADDDDDYYYYYYY")
+		print(getvariable(argument[2]))
+		return getvariable(argument[2])
+		
+	else:
+		return callv(data.blocks[argument].opcode,[argument])
+	#print("damn")
+	#print(argument)
+	pass
+#func looks_costume()
+func looks_costume(inputs):
+	#print("fuckme")
+	print(data.blocks[inputs].fields.COSTUME[0])
+	#print(inputs)
+	return data.blocks[inputs].fields.COSTUME[0]

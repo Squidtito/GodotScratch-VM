@@ -85,7 +85,9 @@ func control_wait(_inputs, _fields):
 	pass
 func control_forever(_inputs, _fields):
 	pass
-	
+
+func motion_pointindirection(inputs, _fields):
+	rotation_degrees = int(inputs.DIRECTION[1][1])-90
 func motion_turnright(inputs, _fields):
 	rotation_degrees+=int(inputs.DEGREES[1][1])
 func motion_turnleft(inputs, _fields):

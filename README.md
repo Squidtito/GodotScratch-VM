@@ -8,19 +8,19 @@ This is a repository trying to recreate the ScratchVM within Godot
 
 
 # What works:
-    A few blocks
-    Broadcasts
-    Sprites
-    Costumes
-    Sounds (Kinda, some are a static mess or are incorrect in some way)
-    (Maybe some more I'm not thinking about right now)
+	A few blocks
+	Broadcasts
+	Sprites
+	Costumes
+	Sounds (Kinda, some are a static mess or are incorrect in some way)
+	(Maybe some more I'm not thinking about right now)
  # What doesn't work:
-    Variables
-    Custom blocks
-    Support for round blocks
-    Text in SVGs
-    If statements
-    Any kind of loop (except forever loops)
-    (And a lot more, these are just some examples)
+	Variables
+	Custom blocks
+	Support for round blocks
+	Text in SVGs
+	If statements
+	Any kind of loop (except forever loops)
+	(And a lot more, these are just some examples)
 
 Sorry if this README is awful, I don't know what I'm doing :D

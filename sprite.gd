@@ -11,13 +11,15 @@ func events_search() -> void:
 		var block_data = data.blocks[block]
 		if typeof(block_data) != TYPE_ARRAY:
 			if block_data.opcode == "event_whenflagclicked":
-				flagclicked.append(block)
-				thread_events.append(Thread.new())
+				if block_data.next != null:
+					flagclicked.append(block)
+					thread_events.append(Thread.new())
 			elif block_data.opcode == "event_whenbroadcastreceived":
 				print(block_data)
-				if not broadcast_receivers.has(block_data.fields.BROADCAST_OPTION[1]):
-					broadcast_receivers.get_or_add(block_data.fields.BROADCAST_OPTION[1], [])
-				broadcast_receivers[block_data.fields.BROADCAST_OPTION[1]].append(block)
+				if block_data.next != null:
+					if not broadcast_receivers.has(block_data.fields.BROADCAST_OPTION[1]):
+						broadcast_receivers.get_or_add(block_data.fields.BROADCAST_OPTION[1], [])
+					broadcast_receivers[block_data.fields.BROADCAST_OPTION[1]].append(block)
 
 func _ready() -> void:
 	set_process(false)

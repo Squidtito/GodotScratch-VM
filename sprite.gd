@@ -30,7 +30,7 @@ func _ready() -> void:
 func start(event):
 	var active : bool = true
 	var current_block
-	var loop:String = ""
+	var loop:Dictionary = {}
 	var block_data
 	current_block = data.blocks[event].next
 	while active:
@@ -48,24 +48,36 @@ func start(event):
 					await get_tree().create_timer(float(block_data.inputs.SECS[1][1])).timeout
 				if block_data.opcode == "control_wait": #I don't know how to make it wait from another funcion... it doesn't work...
 					await get_tree().create_timer(clampf(float(block_data.inputs.DURATION[1][1]),0.001,9999999999)).timeout
+				if block_data.opcode == "control_repeat":
+						#print(block_data)
+						current_block = block_data.inputs.SUBSTACK[1]
+						loop.get_or_add(loop.size()+1,[current_block,block_data.inputs.TIMES[1][1],0,block_data.next])
+						print(loop)
 				if block_data.next == null:
 					if block_data.opcode == "control_forever":
 						current_block = block_data.inputs.SUBSTACK[1]
-						loop = current_block
+						loop.get_or_add(loop.size()+1,[current_block,-1,0])
 					else:
-						if loop != "":
-							current_block = loop
+						if not loop.is_empty():
+							if loop[loop.size()][2] == int(loop[loop.size()][1]):
+								current_block = loop[loop.size()][3]
+								loop.erase(loop.size())
+								if current_block == null:
+									active = false
+								print("break")
+								break
+							current_block = loop[loop.size()][0]
+							print(loop[loop.size()][2])
+							print("gay")
+							print(loop[loop.size()][1])
+							loop[loop.size()][2] += 1 
 							break
 						else:
 							active = false
 							break
 				else:
 					current_block = block_data.next
-					print(str(block_data.opcode)+" | "+str(block_data.inputs))
-				if active == false:
-					break
-			if active == false:
-				break
+					#print(str(block_data.opcode)+" | "+str(block_data.inputs))
 			await Engine.get_main_loop().process_frame
 
 func center_costume() -> void:
@@ -159,9 +171,9 @@ func event_broadcastandwait(inputs, _fields) -> void: # need to make work as int
 func sound_playuntildone(_inputs, _fields) -> void:
 	pass
 func sound_play(inputs, _fields):
-	print("heh" +inputs.SOUND_MENU[1][1])
-	print(data.blocks[inputs.SOUND_MENU[1]].fields.SOUND_MENU[0])
-	print("Sprite: "+name)
+	#print("heh" +inputs.SOUND_MENU[1][1])
+	#print(data.blocks[inputs.SOUND_MENU[1]].fields.SOUND_MENU[0])
+	#print("Sprite: "+name)
 	var sound = get_node_or_null(data.blocks[inputs.SOUND_MENU[1]].fields.SOUND_MENU[0])
 	if sound != null:
 		sound.play()

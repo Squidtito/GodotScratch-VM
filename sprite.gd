@@ -68,6 +68,10 @@ func start(event):
 							if loop[loop.size()][2] == int(loop[loop.size()][1]):
 								current_block = loop[loop.size()][3]
 								loop.erase(loop.size())
+								
+								if current_block == null:
+									if not loop.is_empty():
+										current_block = loop[loop.size()][0]
 								if current_block == null:
 									active = false
 								print("break")

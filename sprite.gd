@@ -53,32 +53,46 @@ func start(event):
 						current_block = block_data.inputs.SUBSTACK[1]
 						#var next_block = block_data.next
 						#if block_data.next == null
-						loop.get_or_add(loop.size()+1,[current_block,block_data.inputs.TIMES[1][1],0,block_data.next])
+						if not loop.has(current_block):
+							loop.get_or_add(current_block,[current_block,block_data.inputs.TIMES[1][1],0,block_data.next])
 						print(loop)
 						#break
 				if block_data.next == null or block_data.opcode == "control_repeat": #not loop.is_empty():
 					if block_data.opcode == "control_forever":
 						current_block = block_data.inputs.SUBSTACK[1]
-						loop.get_or_add(loop.size()+1,[current_block,-1,0])
+						loop.get_or_add(current_block,[current_block,-1,0])
 					else:
-						print(loop)
+						#print(loop)
 						if not loop.is_empty():
-							current_block = loop[loop.size()][0]
-							data.blocks[loop[loop.size()][0]].next
-							if loop[loop.size()][2] == int(loop[loop.size()][1]):
-								current_block = loop[loop.size()][3]
-								loop.erase(loop.size())
+							#print(loop.size())
+							#Dictionary
+							current_block = loop[loop.keys()[-1]][0]
+							data.blocks[loop.keys()[-1]].next
+							if loop[loop.keys()[-1]][2] == int(loop[loop.keys()[-1]][1]):
+								current_block = loop[loop.keys()[-1]][3]
+								loop.erase(loop.keys()[-1])
+#								print(loop[loop.keys()[-1]][2])
+#								print(loop[loop.keys()[-1]][1])
 								
 								if current_block == null:
 									if not loop.is_empty():
-										current_block = loop[loop.size()][0]
+										#loop[loop.keys()[-1]][2] += 1 
+										current_block = loop[loop.keys()[-1]][0]
+										if loop[loop.keys()[-1]][2] == int(loop[loop.keys()[-1]][1]):
+											current_block = loop[loop.keys()[-1]][0]
+										
 								if current_block == null:
 									active = false
-								print("break")
+#								print("break"+str(loop[loop.keys()[-1]][2]))
+								#break
 							else:
-								loop[loop.size()][2] += 1 
+								pass
+							loop[loop.keys()[-1]][2] += 1 
+							#if loop[loop.size()][2] == int(loop[loop.size()][1]):
+							#	active=false
+							#	break
 							#print(loop[loop.size()][2])
-							print("gay")
+							#print("gay")
 							#print(loop[loop.size()][1])
 							break
 						else:

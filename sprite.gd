@@ -51,26 +51,31 @@ func start(event):
 				if block_data.opcode == "control_repeat":
 						#print(block_data)
 						current_block = block_data.inputs.SUBSTACK[1]
+						#var next_block = block_data.next
+						#if block_data.next == null
 						loop.get_or_add(loop.size()+1,[current_block,block_data.inputs.TIMES[1][1],0,block_data.next])
 						print(loop)
-				if block_data.next == null:
+						#break
+				if block_data.next == null or block_data.opcode == "control_repeat": #not loop.is_empty():
 					if block_data.opcode == "control_forever":
 						current_block = block_data.inputs.SUBSTACK[1]
 						loop.get_or_add(loop.size()+1,[current_block,-1,0])
 					else:
+						print(loop)
 						if not loop.is_empty():
+							current_block = loop[loop.size()][0]
+							data.blocks[loop[loop.size()][0]].next
 							if loop[loop.size()][2] == int(loop[loop.size()][1]):
 								current_block = loop[loop.size()][3]
 								loop.erase(loop.size())
 								if current_block == null:
 									active = false
 								print("break")
-								break
-							current_block = loop[loop.size()][0]
-							print(loop[loop.size()][2])
+							else:
+								loop[loop.size()][2] += 1 
+							#print(loop[loop.size()][2])
 							print("gay")
-							print(loop[loop.size()][1])
-							loop[loop.size()][2] += 1 
+							#print(loop[loop.size()][1])
 							break
 						else:
 							active = false
@@ -101,6 +106,10 @@ func control_wait(_inputs, _fields) -> void:
 func control_forever(_inputs, _fields) -> void:
 	pass
 
+func motion_changexby(inputs, _fields):
+	position.x += float(inputs.DX[1][1])
+func motion_changeyby(inputs, _fields):
+	position.y -= float(inputs.DY[1][1])
 func motion_pointindirection(inputs, _fields) -> void:
 	rotation_degrees = int(inputs.DIRECTION[1][1])-90
 func motion_turnright(inputs, _fields) -> void:

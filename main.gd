@@ -30,11 +30,7 @@ func create_sprites():
 					costumefilename = costume.assetId+".png"
 				var imagefile = reader.read_file(costumefilename)
 				if str(costumefilename).get_extension() == "svg":
-					var TempFile = FileAccess.open("user://temp.svg", FileAccess.WRITE) 
-					TempFile.store_string(imagefile.get_string_from_utf8())
-					TempFile.close()
-
-					error = image.load("user://temp.svg")
+					error = image.load_svg_from_buffer(imagefile)
 				elif str(costumefilename).get_extension() == "png":
 					error = image.load_png_from_buffer(imagefile)
 

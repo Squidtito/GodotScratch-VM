@@ -5,6 +5,7 @@ var data
 var flagclicked : Array = []
 var thread_events : Array = []
 var broadcast_receivers : Dictionary = {}
+var sounds : Dictionary = {}
 
 func events_search() -> void:
 	for block in data.blocks:
@@ -40,7 +41,7 @@ func start(event):
 				#callv(block_data.opcode, [block_data.inputs,block_data.fields])
 				if block_data.opcode == "sound_playuntildone":
 					sound_play(block_data.inputs,block_data.fields)
-					var soundnode : AudioStreamPlayer = get_node_or_null(data.blocks[block_data.inputs.SOUND_MENU[1]].fields.SOUND_MENU[0])
+					var soundnode : AudioStreamPlayer = get_node_or_null(str(sounds.get(data.blocks[block_data.inputs.SOUND_MENU[1]].fields.SOUND_MENU[0])))
 					if soundnode != null:
 						await get_tree().create_timer(soundnode.stream.get_length()).timeout
 					
@@ -159,10 +160,11 @@ func event_broadcastandwait(inputs, _fields) -> void: # need to make work as int
 func sound_playuntildone(_inputs, _fields) -> void:
 	pass
 func sound_play(inputs, _fields):
-	print("heh" +inputs.SOUND_MENU[1][1])
-	print(data.blocks[inputs.SOUND_MENU[1]].fields.SOUND_MENU[0])
-	print("Sprite: "+name)
-	var sound = get_node_or_null(data.blocks[inputs.SOUND_MENU[1]].fields.SOUND_MENU[0])
+	#print("heh" +inputs.SOUND_MENU[1][1])
+	#print(data.blocks[inputs.SOUND_MENU[1]].fields.SOUND_MENU[0])
+	#print("Sprite: "+name)
+	#print(sounds.get(data.blocks[inputs.SOUND_MENU[1]].fields.SOUND_MENU[0]))
+	var sound = get_node_or_null(str(sounds.get(data.blocks[inputs.SOUND_MENU[1]].fields.SOUND_MENU[0])))
 	if sound != null:
 		sound.play()
 

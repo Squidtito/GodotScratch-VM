@@ -38,7 +38,7 @@ func create_sprites():
 					print("BRO IT FAILED")
 				else:
 					Costumes.get_sprite_frames().add_frame("default", ImageTexture.create_from_image(image))
-					Sprite.costume_names.append(costumefilename)
+					Sprite.costume_names.append(costume.name)
 			for audio in target.sounds:
 				var soundfile = reader.read_file(audio.md5ext)
 				var sound

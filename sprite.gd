@@ -137,7 +137,7 @@ func looks_nextcostume(_inputs, _fields) -> void:
 		costumes.scale = Vector2(0.5,0.5)
 	center_costume()
 func looks_switchcostumeto(inputs, _fields) -> void:
-	costumes.frame=costume_names.find(inputs.COSTUME[1])
+	costumes.frame=costume_names.find(data.blocks[inputs.COSTUME[1]].fields.COSTUME[0])
 	center_costume()
 func looks_seteffectto(inputs, fields) -> void:
 	if fields.EFFECT[0] == "GHOST":

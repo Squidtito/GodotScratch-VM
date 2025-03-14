@@ -53,6 +53,7 @@ func start(event, loop:String, repeattimes:int):
 				if block_data.opcode == "control_wait": #I don't know how to make it wait from another funcion... it doesn't work...
 					await get_tree().create_timer(clampf(float(block_data.inputs.DURATION[1][1]),0.03,9999999999)).timeout
 				if block_data.opcode == "control_repeat":
+					#pass
 					await start(block_data.inputs.SUBSTACK[1],block_data.inputs.SUBSTACK[1], int(block_data.inputs.TIMES[1][1]))
 				if block_data.next == null:
 					if block_data.opcode == "control_forever":
@@ -163,6 +164,7 @@ func looks_changesizeby(inputs, _fields) -> void:
 	scale += Vector2(1,1)*(float(inputs.CHANGE[1][1])/100)
 	
 func event_broadcast(inputs, _fields) -> void:
+	#print("hehe")
 	$'../'.broadcast(inputs.BROADCAST_INPUT[1][2])
 func event_broadcastandwait(inputs, _fields) -> void: # need to make work as intended
 	$'../'.broadcast(inputs.BROADCAST_INPUT[1][2])
@@ -179,5 +181,5 @@ func execute_broadcast(broadcast) -> void:
 	if broadcast_receivers.has(broadcast):
 		for receiver in broadcast_receivers[broadcast]:
 			var thread = Thread.new()
-			thread.start(start.bind(receiver))
+			thread.start(start.bind(receiver,"",-1))
 	pass

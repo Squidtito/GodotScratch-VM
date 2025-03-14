@@ -52,7 +52,7 @@ func create_sprites():
 				node.stream=sound
 				sound.data = soundfile
 				Sprite.add_child(node)
-				Sprite.sounds.get_or_add(str(audio.name),str(node.name))
+				Sprite.sounds.get_or_add(audio.name,node.name)
 			Sprite.data = target
 			Sprite.name = target.name
 			print(Sprite.data.currentCostume)

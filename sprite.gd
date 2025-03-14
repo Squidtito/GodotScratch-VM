@@ -6,7 +6,6 @@ var flagclicked : Array = []
 var thread_events : Array = []
 var broadcast_receivers : Dictionary = {}
 var sounds : Dictionary = {}
-var explain = []
 
 func events_search() -> void:
 	for block in data.blocks:
@@ -44,7 +43,10 @@ func start(event, loop:String, repeattimes:int):
 				call_deferred(block_data.opcode, block_data.inputs,block_data.fields)
 				#callv(block_data.opcode, [block_data.inputs,block_data.fields])
 				if block_data.opcode == "sound_playuntildone":
-					await get_tree().create_timer(sound_playuntildonee(block_data.inputs,block_data.fields)).timeout
+					sound_play(block_data.inputs,block_data.fields)
+					var soundnode : AudioStreamPlayer = get_node_or_null(str(sounds.get(data.blocks[block_data.inputs.SOUND_MENU[1]].fields.SOUND_MENU[0])))
+					if soundnode != null:
+						await get_tree().create_timer(soundnode.stream.get_length()).timeout
 					
 				if block_data.opcode == "motion_glidesecstoxy":
 					await get_tree().create_timer(float(block_data.inputs.SECS[1][1])).timeout
@@ -68,7 +70,7 @@ func start(event, loop:String, repeattimes:int):
 							break
 				else:
 					current_block = block_data.next
-					#print(str(block_data.opcode)+" | "+str(block_data.inputs))
+					print(str(block_data.opcode)+" | "+str(block_data.inputs))
 				if active == false:
 					break
 			#times+=1
@@ -167,22 +169,10 @@ func event_broadcast(inputs, _fields) -> void:
 func event_broadcastandwait(inputs, _fields) -> void: # need to make work as intended
 	$'../'.broadcast(inputs.BROADCAST_INPUT[1][2])
 
-func sound_playuntildonee(inputs, _fields): #For some godforsaken reason, at least for the scratch project I'm using, it cannot find the node attatched to the node even thought IT PRINTS THE SAME NAME AS THE AVAILABLE NODE
-	sound_play(inputs, _fields)
-	var sound = get_node_or_null(sounds.get(data.blocks[inputs.SOUND_MENU[1]].fields.SOUND_MENU[0]))
-	print(sound)
-	print(inputs)
-	print(data.blocks[inputs.SOUND_MENU[1]].fields.SOUND_MENU[0])
-	print(sounds)
-	if sound != null:
-		return sound.stream.get_length()
-	else:
-		return 2
+func sound_playuntildone(_inputs, _fields) -> void:
+	pass
 func sound_play(inputs, _fields):
-	var sound
-	sound = get_node_or_null(sounds.get(data.blocks[inputs.SOUND_MENU[1]].fields.SOUND_MENU[0]))
-	explain.append(data.blocks[inputs.SOUND_MENU[1]].fields.SOUND_MENU[0])
-	explain.append(get_node_or_null(sounds.get(data.blocks[inputs.SOUND_MENU[1]].fields.SOUND_MENU[0])))
+	var sound = get_node_or_null(str(sounds.get(data.blocks[inputs.SOUND_MENU[1]].fields.SOUND_MENU[0])))
 	if sound != null:
 		sound.play()
 

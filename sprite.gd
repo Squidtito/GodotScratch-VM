@@ -100,6 +100,10 @@ func control_wait(_inputs, _fields) -> void:
 func control_forever(_inputs, _fields) -> void:
 	pass
 
+func motion_changexby(inputs, _fields):
+	position.x += float(inputs.DX[1][1])
+func motion_changeyby(inputs, _fields):
+	position.y -= float(inputs.DY[1][1])
 func motion_pointindirection(inputs, _fields) -> void:
 	rotation_degrees = int(inputs.DIRECTION[1][1])-90
 func motion_turnright(inputs, _fields) -> void:

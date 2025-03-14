@@ -10,5 +10,3 @@ script = ExtResource("1_pvlmq")
 [node name="Costumes" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_34fht")
 speed_scale = 0.0
-
-[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]

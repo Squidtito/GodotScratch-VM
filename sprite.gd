@@ -16,7 +16,6 @@ func events_search() -> void:
 					flagclicked.append(block)
 					thread_events.append(Thread.new())
 			elif block_data.opcode == "event_whenbroadcastreceived":
-				print(block_data)
 				if block_data.next != null:
 					if not broadcast_receivers.has(block_data.fields.BROADCAST_OPTION[1]):
 						broadcast_receivers.get_or_add(block_data.fields.BROADCAST_OPTION[1], [])
@@ -25,16 +24,20 @@ func events_search() -> void:
 func _ready() -> void:
 	set_process(false)
 	for event in thread_events.size():
-		thread_events[event].start(start.bind(flagclicked[event]))
-	center_costume()
+		thread_events[event].start(start.bind(flagclicked[event], "", -1))
+	fix_costume()
 
-func start(event):
+func start(event, loop:String, repeattimes:int):
 	var active : bool = true
 	var current_block
-	var loop:String = ""
 	var block_data
-	current_block = data.blocks[event].next
+	var times: int = 0
+	if loop == "":
+		current_block = data.blocks[event].next
+	else:
+		current_block = event
 	while active:
+			times+=1
 			while 1:
 				block_data = data.blocks[current_block]
 				call_deferred(block_data.opcode, block_data.inputs,block_data.fields)
@@ -48,13 +51,17 @@ func start(event):
 				if block_data.opcode == "motion_glidesecstoxy":
 					await get_tree().create_timer(float(block_data.inputs.SECS[1][1])).timeout
 				if block_data.opcode == "control_wait": #I don't know how to make it wait from another funcion... it doesn't work...
-					await get_tree().create_timer(clampf(float(block_data.inputs.DURATION[1][1]),0.001,9999999999)).timeout
+					await get_tree().create_timer(clampf(float(block_data.inputs.DURATION[1][1]),0.03,9999999999)).timeout
+				if block_data.opcode == "control_repeat":
+					await start(block_data.inputs.SUBSTACK[1],block_data.inputs.SUBSTACK[1], int(block_data.inputs.TIMES[1][1]))
 				if block_data.next == null:
 					if block_data.opcode == "control_forever":
 						current_block = block_data.inputs.SUBSTACK[1]
-						loop = current_block
+						
+						await start(block_data.inputs.SUBSTACK[1],block_data.inputs.SUBSTACK[1],-1)
+					#	loop = current_block
 					else:
-						if loop != "":
+						if loop != "" and times != repeattimes:
 							current_block = loop
 							break
 						else:
@@ -65,11 +72,10 @@ func start(event):
 					print(str(block_data.opcode)+" | "+str(block_data.inputs))
 				if active == false:
 					break
-			if active == false:
-				break
+			#times+=1
 			await Engine.get_main_loop().process_frame
 
-func center_costume() -> void:
+func fix_costume() -> void:
 	var costumefilename
 	if data.costumes[costumes.frame].has("md5ext"):
 		costumefilename = data.costumes[costumes.frame].md5ext
@@ -84,6 +90,10 @@ func center_costume() -> void:
 						data.costumes[costumes.frame].rotationCenterX * -1,
 						data.costumes[costumes.frame].rotationCenterY * -1  # Fix: Use -1 instead of 0
 					)
+	if data.costumes[costumes.frame].dataFormat == "svg":
+		costumes.scale = Vector2(1,1)
+	elif data.costumes[costumes.frame].dataFormat == "png":
+		costumes.scale = Vector2(0.5,0.5)
 
 func control_wait(_inputs, _fields) -> void:
 	pass
@@ -132,14 +142,10 @@ func looks_nextcostume(_inputs, _fields) -> void:
 		costumes.frame=0
 	else:
 		costumes.frame+=1
-	if data.costumes[costumes.frame].dataFormat == "svg":
-		costumes.scale = Vector2(1,1)
-	elif data.costumes[costumes.frame].dataFormat == "png":
-		costumes.scale = Vector2(0.5,0.5)
-	center_costume()
+	fix_costume()
 func looks_switchcostumeto(inputs, _fields) -> void:
 	costumes.frame=costume_names.find(data.blocks[inputs.COSTUME[1]].fields.COSTUME[0])
-	center_costume()
+	fix_costume()
 func looks_seteffectto(inputs, fields) -> void:
 	if fields.EFFECT[0] == "GHOST":
 		modulate = Color(1,1,1,1-float(inputs.VALUE[1][1])/100)
@@ -160,19 +166,13 @@ func event_broadcastandwait(inputs, _fields) -> void: # need to make work as int
 func sound_playuntildone(_inputs, _fields) -> void:
 	pass
 func sound_play(inputs, _fields):
-	#print("heh" +inputs.SOUND_MENU[1][1])
-	#print(data.blocks[inputs.SOUND_MENU[1]].fields.SOUND_MENU[0])
-	#print("Sprite: "+name)
-	#print(sounds.get(data.blocks[inputs.SOUND_MENU[1]].fields.SOUND_MENU[0]))
 	var sound = get_node_or_null(str(sounds.get(data.blocks[inputs.SOUND_MENU[1]].fields.SOUND_MENU[0])))
 	if sound != null:
 		sound.play()
 
 func execute_broadcast(broadcast) -> void:
 	#for receivers in broadcast_receivers:
-	print("executing")
 	if broadcast_receivers.has(broadcast):
-		print("executed")
 		for receiver in broadcast_receivers[broadcast]:
 			var thread = Thread.new()
 			thread.start(start.bind(receiver))

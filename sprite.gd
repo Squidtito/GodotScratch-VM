@@ -76,6 +76,12 @@ func start(event, loop:String, repeattimes:int):
 			#times+=1
 			await Engine.get_main_loop().process_frame
 
+func evaluate_input(arg):
+	print(arg)
+	var block_data = data.blocks[arg]
+	return callv(block_data.opcode, [block_data.inputs,block_data.fields])
+	pass
+
 func fix_costume() -> void:
 	var costumefilename
 	if data.costumes[costumes.frame].has("md5ext"):
@@ -149,8 +155,14 @@ func looks_nextcostume(_inputs, _fields) -> void:
 		costumes.frame+=1
 	fix_costume()
 func looks_switchcostumeto(inputs, _fields) -> void:
-	costumes.frame=costume_names.find(data.blocks[inputs.COSTUME[1]].fields.COSTUME[0])
+	print(inputs.COSTUME[1])
+	costumes.frame=costume_names.find(evaluate_input(inputs.COSTUME[1]))
+	#costumes.frame=costume_names.find(data.blocks[inputs.COSTUME[1]].fields.COSTUME[0])
 	fix_costume()
+func looks_costume(_inputs, fields):
+	print(fields)
+	print("oh yes daddy")
+	return evaluate_input(fields.COSTUME[0])
 func looks_seteffectto(inputs, fields) -> void:
 	if fields.EFFECT[0] == "GHOST":
 		modulate = Color(1,1,1,1-float(inputs.VALUE[1][1])/100)

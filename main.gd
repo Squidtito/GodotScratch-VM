@@ -6,7 +6,7 @@ var json
 func _init() -> void:
 	
 	reader = ZIPReader.new()
-	sb3 = reader.open("res://Project.sb3")
+	sb3 = reader.open("res://sb3/round block test.sb3")
 	json = reader.read_file("project.json").get_string_from_utf8()
 	json = JSON.parse_string(json)
 	
@@ -22,7 +22,7 @@ func create_sprites():
 				
 				var image = Image.new()
 				var error : Error
-				print(costume)
+				#print(costume)
 				var costumefilename
 				if costume.has("md5ext"):
 					costumefilename = costume.md5ext
@@ -55,7 +55,7 @@ func create_sprites():
 				Sprite.sounds.get_or_add(audio.name,node.name)
 			Sprite.data = target
 			Sprite.name = target.name
-			print(Sprite.data.currentCostume)
+			#print(Sprite.data.currentCostume)
 			Costumes.frame = int(Sprite.data.currentCostume)
 			if not target.isStage:
 				Sprite.rotation_degrees = Sprite.data.direction-90

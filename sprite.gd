@@ -78,8 +78,14 @@ func start(event, loop:String, repeattimes:int):
 
 func evaluate_input(arg):
 	print(arg)
-	var block_data = data.blocks[arg]
-	return callv(block_data.opcode, [block_data.inputs,block_data.fields])
+	var block_data
+	if data.blocks.has(arg):
+		block_data = data.blocks[arg]
+		print("ugh")
+		print(callv(block_data.opcode, [block_data.inputs,block_data.fields]))
+		return callv(block_data.opcode, [block_data.inputs,block_data.fields])
+	else:
+		return arg
 	pass
 
 func fix_costume() -> void:
@@ -101,6 +107,20 @@ func fix_costume() -> void:
 		costumes.scale = Vector2(1,1)
 	elif data.costumes[costumes.frame].dataFormat == "png":
 		costumes.scale = Vector2(0.5,0.5)
+
+func operator_add(inputs, fields):
+	print(inputs)
+	var NUM1 = evaluate_input(inputs.NUM1[1][1])
+	var NUM2 = evaluate_input(inputs.NUM2[1][1])
+	if NUM1.is_valid_int():
+		NUM1 = int(NUM1)
+	elif NUM1.is_valid_float():
+		NUM1 = float(NUM1)
+	if NUM2.is_valid_int():
+		NUM2 = int(NUM2)
+	elif NUM2.is_valid_float():
+		NUM2 = float(NUM2)
+	return NUM1+NUM2
 
 func control_wait(_inputs, _fields) -> void:
 	pass
@@ -156,7 +176,8 @@ func looks_nextcostume(_inputs, _fields) -> void:
 	fix_costume()
 func looks_switchcostumeto(inputs, _fields) -> void:
 	print(inputs.COSTUME[1])
-	costumes.frame=costume_names.find(evaluate_input(inputs.COSTUME[1]))
+	#print(costume_names.has(2))
+	costumes.frame=costume_names.find(str(evaluate_input(inputs.COSTUME[1])))
 	#costumes.frame=costume_names.find(data.blocks[inputs.COSTUME[1]].fields.COSTUME[0])
 	fix_costume()
 func looks_costume(_inputs, fields):

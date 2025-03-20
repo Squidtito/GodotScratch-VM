@@ -78,15 +78,15 @@ func start(event, loop:String, repeattimes:int):
 
 func evaluate_input(arg):
 	print(arg)
-	var block_data
-	if data.blocks.has(arg):
-		block_data = data.blocks[arg]
-		print("ugh")
-		print(callv(block_data.opcode, [block_data.inputs,block_data.fields]))
+	print("grouh")
+	if arg[0] == 3.0:
+		var block_data = data.blocks[arg[1]]
 		return callv(block_data.opcode, [block_data.inputs,block_data.fields])
-	else:
-		return arg
-	pass
+	elif arg[0] == 1.0:
+		if typeof(arg[1]) == TYPE_ARRAY:
+			return arg[1][1]
+		else:
+			return arg[1]
 
 func fix_costume() -> void:
 	var costumefilename
@@ -110,8 +110,13 @@ func fix_costume() -> void:
 
 func operator_add(inputs, fields):
 	print(inputs)
-	var NUM1 = evaluate_input(inputs.NUM1[1][1])
-	var NUM2 = evaluate_input(inputs.NUM2[1][1])
+	var NUM1 = evaluate_input(inputs.NUM1)
+	var NUM2 = evaluate_input(inputs.NUM2)
+	print(NUM1)
+	print(NUM2)
+	if NUM1 == null: NUM1 = "0"
+	if NUM2 == null: NUM2 = "0"
+	
 	if NUM1.is_valid_int():
 		NUM1 = int(NUM1)
 	elif NUM1.is_valid_float():
@@ -120,7 +125,7 @@ func operator_add(inputs, fields):
 		NUM2 = int(NUM2)
 	elif NUM2.is_valid_float():
 		NUM2 = float(NUM2)
-	return NUM1+NUM2
+	return str(NUM1+NUM2)
 
 func control_wait(_inputs, _fields) -> void:
 	pass
@@ -168,6 +173,13 @@ func motion_glidesecstoxy(inputs, _fields) -> void:
 			break
 
 	
+func looks_costumenumbername(_inputs, fields):
+	print("a")
+	print(fields)
+	if fields.NUMBER_NAME[0] == "number":
+		print("bruh")
+		print(costumes.frame)
+		return str(costumes.frame+1)
 func looks_nextcostume(_inputs, _fields) -> void:
 	if costumes.frame == costumes.sprite_frames.get_frame_count("default")-1:
 		costumes.frame=0
@@ -177,7 +189,7 @@ func looks_nextcostume(_inputs, _fields) -> void:
 func looks_switchcostumeto(inputs, _fields) -> void:
 	print(inputs.COSTUME[1])
 	#print(costume_names.has(2))
-	costumes.frame=costume_names.find(str(evaluate_input(inputs.COSTUME[1])))
+	costumes.frame=costume_names.find(str(evaluate_input(inputs.COSTUME)))
 	#costumes.frame=costume_names.find(data.blocks[inputs.COSTUME[1]].fields.COSTUME[0])
 	fix_costume()
 func looks_costume(_inputs, fields):

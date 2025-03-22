@@ -126,7 +126,24 @@ func operator_add(inputs, fields):
 	elif NUM2.is_valid_float():
 		NUM2 = float(NUM2)
 	return str(NUM1+NUM2)
-
+func operator_subtract(inputs, fields):
+	print(inputs)
+	var NUM1 = evaluate_input(inputs.NUM1)
+	var NUM2 = evaluate_input(inputs.NUM2)
+	print(NUM1)
+	print(NUM2)
+	if NUM1 == null: NUM1 = "0"
+	if NUM2 == null: NUM2 = "0"
+	
+	if NUM1.is_valid_int():
+		NUM1 = int(NUM1)
+	elif NUM1.is_valid_float():
+		NUM1 = float(NUM1)
+	if NUM2.is_valid_int():
+		NUM2 = int(NUM2)
+	elif NUM2.is_valid_float():
+		NUM2 = float(NUM2)
+	return str(NUM1-NUM2)
 func control_wait(_inputs, _fields) -> void:
 	pass
 func control_forever(_inputs, _fields) -> void:
@@ -189,13 +206,18 @@ func looks_nextcostume(_inputs, _fields) -> void:
 func looks_switchcostumeto(inputs, _fields) -> void:
 	print(inputs.COSTUME[1])
 	#print(costume_names.has(2))
-	costumes.frame=costume_names.find(str(evaluate_input(inputs.COSTUME)))
+	costumes.frame=costume_names.find(evaluate_input(inputs.COSTUME))
+	print(evaluate_input(inputs.COSTUME))
+	print("HELP MEE")
+	#print(evaluate_input(inputs.COSTUME))
+	print("MEOW?")
 	#costumes.frame=costume_names.find(data.blocks[inputs.COSTUME[1]].fields.COSTUME[0])
 	fix_costume()
 func looks_costume(_inputs, fields):
 	print(fields)
-	print("oh yes daddy")
-	return evaluate_input(fields.COSTUME[0])
+	print("oh yes")
+	print(evaluate_input(fields.COSTUME))
+	return evaluate_input(fields.COSTUME)
 func looks_seteffectto(inputs, fields) -> void:
 	if fields.EFFECT[0] == "GHOST":
 		modulate = Color(1,1,1,1-float(inputs.VALUE[1][1])/100)

@@ -150,11 +150,9 @@ func operator_subtract(inputs, _fields):
 	var NUM1 = check_number(evaluate_input(inputs.NUM1))
 	var NUM2 = check_number(evaluate_input(inputs.NUM2))
 	return str(NUM1-NUM2)
-func control_wait(_inputs, _fields) -> void:
-	pass
-func control_forever(_inputs, _fields) -> void:
-	pass
-
+func control_wait(_inputs, _fields) -> void: pass
+func control_forever(_inputs, _fields) -> void: pass
+func control_repeat(_inputs, _fields) -> void: pass
 func motion_changexby(inputs, _fields):
 	position.x += float(evaluate_input(inputs.DX))
 func motion_changeyby(inputs, _fields):

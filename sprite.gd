@@ -79,14 +79,34 @@ func start(event, loop:String, repeattimes:int):
 func evaluate_input(arg):
 	print(arg)
 	print("grouh")
-	if arg[0] == 3.0:
-		var block_data = data.blocks[arg[1]]
-		return callv(block_data.opcode, [block_data.inputs,block_data.fields])
-	elif arg[0] == 1.0:
+	
+	#match arg[0]:
+	#	1.0:
+	#		var block_data = data.blocks[arg[1]]
+	#		return callv(block_data.opcode, [block_data.inputs,block_data.fields])
+	if arg[0] == 1.0:
 		if typeof(arg[1]) == TYPE_ARRAY:
 			return arg[1][1]
 		else:
-			return arg[1]
+			if arg[0] == 1.0:
+				var block_data = data.blocks[arg[1]]
+				return callv(block_data.opcode, [block_data.inputs,block_data.fields])
+			else:
+				return arg[1]
+	if arg[0] == 3.0:
+		print("hehe~")
+		print(arg)
+		var block_data = data.blocks[arg[1]]
+		return callv(block_data.opcode, [block_data.inputs,block_data.fields])
+	
+	#if arg[0] == 3.0 || arg[0] == 2.0:
+	#	var block_data = data.blocks[arg[1]]
+	#	return callv(block_data.opcode, [block_data.inputs,block_data.fields])
+	#elif arg[0] == 1.0:
+	#	if typeof(arg[1]) == TYPE_ARRAY:
+	#		return arg[1][1]
+	#	else:
+	#		return arg[1]
 
 func fix_costume() -> void:
 	var costumefilename
@@ -121,10 +141,12 @@ func operator_add(inputs, fields):
 		NUM1 = int(NUM1)
 	elif NUM1.is_valid_float():
 		NUM1 = float(NUM1)
+		if floor(NUM1) == NUM1: NUM1 = int(NUM1)
 	if NUM2.is_valid_int():
 		NUM2 = int(NUM2)
 	elif NUM2.is_valid_float():
 		NUM2 = float(NUM2)
+		if floor(NUM2) == NUM2: NUM2 = int(NUM2)
 	return str(NUM1+NUM2)
 func operator_subtract(inputs, fields):
 	print(inputs)
@@ -139,10 +161,12 @@ func operator_subtract(inputs, fields):
 		NUM1 = int(NUM1)
 	elif NUM1.is_valid_float():
 		NUM1 = float(NUM1)
+		if floor(NUM1) == NUM1: NUM1 = int(NUM1)
 	if NUM2.is_valid_int():
 		NUM2 = int(NUM2)
 	elif NUM2.is_valid_float():
 		NUM2 = float(NUM2)
+		if floor(NUM2) == NUM2: NUM2 = int(NUM2)
 	return str(NUM1-NUM2)
 func control_wait(_inputs, _fields) -> void:
 	pass
@@ -204,7 +228,8 @@ func looks_nextcostume(_inputs, _fields) -> void:
 		costumes.frame+=1
 	fix_costume()
 func looks_switchcostumeto(inputs, _fields) -> void:
-	print(inputs.COSTUME[1])
+	print("ughhh")
+	print(inputs.COSTUME)
 	#print(costume_names.has(2))
 	costumes.frame=costume_names.find(evaluate_input(inputs.COSTUME))
 	print(evaluate_input(inputs.COSTUME))
@@ -216,8 +241,9 @@ func looks_switchcostumeto(inputs, _fields) -> void:
 func looks_costume(_inputs, fields):
 	print(fields)
 	print("oh yes")
-	print(evaluate_input(fields.COSTUME))
-	return evaluate_input(fields.COSTUME)
+	#print(evaluate_input(fields.COSTUME))
+	
+	return fields.COSTUME[0]
 func looks_seteffectto(inputs, fields) -> void:
 	if fields.EFFECT[0] == "GHOST":
 		modulate = Color(1,1,1,1-float(inputs.VALUE[1][1])/100)

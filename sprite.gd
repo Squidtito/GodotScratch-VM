@@ -6,6 +6,7 @@ var flagclicked : Array = []
 var thread_events : Array = []
 var broadcast_receivers : Dictionary = {}
 var sounds : Dictionary = {}
+var active_threads = []
 
 func events_search() -> void:
 	for block in data.blocks:
@@ -27,6 +28,7 @@ func _ready() -> void:
 		thread_events[event].start(start.bind(flagclicked[event], "", -1))
 	fix_costume()
 
+#@warning_ignore("")
 func start(event, loop:String, repeattimes:int):
 	var active : bool = true
 	var current_block
@@ -74,7 +76,6 @@ func start(event, loop:String, repeattimes:int):
 					break
 			#times+=1
 			await Engine.get_main_loop().process_frame
-
 func check_number(NUM):
 	if NUM == null: NUM = "0"
 	
@@ -217,6 +218,9 @@ func looks_costume(_inputs, fields):
 func looks_seteffectto(inputs, fields) -> void:
 	if fields.EFFECT[0] == "GHOST":
 		modulate = Color(1,1,1,1-float(evaluate_input(inputs.VALUE))/100)
+func looks_changeeffectby(inputs, fields) -> void:
+	if fields.EFFECT[0] == "GHOST":
+		modulate += Color(0,0,0,-float(evaluate_input(inputs.CHANGE))/100)
 func looks_hide(_inputs, _fields) -> void:
 	visible = false
 func looks_show(_inputs, _fields) -> void:
@@ -244,11 +248,19 @@ func sensing_mousey(_inputs, _fields):
 	return str(-get_global_mouse_position().y)
 func sensing_timer(_inputs, _fields):
 	return str($'../'.time_elapsed)
-
+func sensing_resettimer(_inputs, _fields):
+	$'../'.time_start = Time.get_unix_time_from_system()
 func execute_broadcast(broadcast) -> void:
 	#for receivers in broadcast_receivers:
 	if broadcast_receivers.has(broadcast):
 		for receiver in broadcast_receivers[broadcast]:
 			var thread = Thread.new()
 			thread.start(start.bind(receiver,"",-1))
+			thread_events.append(thread)
 	pass
+
+func _exit_tree() -> void:
+	for thread in thread_events:
+		if thread.is_alive():
+			thread.wait_to_finish()
+	thread_events.clear()

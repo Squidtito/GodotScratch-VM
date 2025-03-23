@@ -82,7 +82,8 @@ func check_number(NUM):
 		NUM = int(NUM)
 	elif NUM.is_valid_float():
 		NUM = float(NUM)
-		if floor(NUM) == NUM: NUM = int(NUM)
+		if floor(NUM) == NUM: 
+			NUM = int(NUM)
 	return NUM
 func evaluate_input(arg):
 	match int(arg[0]):
@@ -221,9 +222,9 @@ func looks_hide(_inputs, _fields) -> void:
 func looks_show(_inputs, _fields) -> void:
 	visible = true
 func looks_setsizeto(inputs, _fields) -> void:
-	scale = Vector2(1,1)*(check_number(evaluate_input(inputs.SIZE))/100)
+	scale = Vector2(1,1)*(float(evaluate_input(inputs.SIZE))/100)
 func looks_changesizeby(inputs, _fields) -> void:
-	scale += Vector2(1,1)*(check_number(evaluate_input(inputs.CHANGE))/100)
+	scale += Vector2(1,1)*(float(evaluate_input(inputs.CHANGE))/100)
 	
 func event_broadcast(inputs, _fields) -> void:
 	$'../'.broadcast(evaluate_input(inputs.BROADCAST_INPUT))

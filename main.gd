@@ -2,6 +2,9 @@ extends Node2D
 var reader:ZIPReader
 var sb3
 var json
+var time_start = Time.get_unix_time_from_system()
+var time_now = 0
+var time_elapsed = 0
 
 func _init() -> void:
 	
@@ -70,3 +73,7 @@ func broadcast(sendbroadcast):
 	for sprite in get_children():
 		if not sprite.name == "Camera2D":
 			sprite.execute_broadcast(sendbroadcast)
+
+func _process(delta):
+	time_now = Time.get_unix_time_from_system()
+	time_elapsed = time_now - time_start

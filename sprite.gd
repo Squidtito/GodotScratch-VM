@@ -70,7 +70,6 @@ func start(event, loop:String, repeattimes:int):
 							break
 				else:
 					current_block = block_data.next
-					#print(str(block_data.opcode)+" | "+str(block_data.inputs))
 				if active == false:
 					break
 			#times+=1
@@ -86,11 +85,6 @@ func check_number(NUM):
 		if floor(NUM) == NUM: NUM = int(NUM)
 	return NUM
 func evaluate_input(arg):
-	
-	#match arg[0]:
-	#	1.0:
-	#		var block_data = data.blocks[arg[1]]
-	#		return callv(block_data.opcode, [block_data.inputs,block_data.fields])
 	match int(arg[0]):
 		1:
 			if typeof(arg[1]) == TYPE_ARRAY:
@@ -150,25 +144,36 @@ func operator_subtract(inputs, _fields):
 	var NUM1 = check_number(evaluate_input(inputs.NUM1))
 	var NUM2 = check_number(evaluate_input(inputs.NUM2))
 	return str(NUM1-NUM2)
+func operator_multiply(inputs, _fields):
+	var NUM1 = check_number(evaluate_input(inputs.NUM1))
+	var NUM2 = check_number(evaluate_input(inputs.NUM2))
+	return str(NUM1*NUM2)
+func operator_divide(inputs, _fields):
+	var NUM1 = check_number(evaluate_input(inputs.NUM1))
+	var NUM2 = check_number(evaluate_input(inputs.NUM2))
+	return str(NUM1/NUM2)
+	
 func control_wait(_inputs, _fields) -> void: pass
 func control_forever(_inputs, _fields) -> void: pass
 func control_repeat(_inputs, _fields) -> void: pass
 func motion_changexby(inputs, _fields):
-	position.x += float(evaluate_input(inputs.DX))
+	position.x += check_number(evaluate_input(inputs.DX))
 func motion_changeyby(inputs, _fields):
-	position.y -= float(evaluate_input(inputs.DY))
+	position.y -= check_number(evaluate_input(inputs.DY))
+func motion_xposition(_inputs, _fields): return str(position.x)
+func motion_yposition(_inputs, _fields): return str(-position.y)
 func motion_pointindirection(inputs, _fields) -> void:
-	rotation_degrees = int(evaluate_input(inputs.DIRECTION))-90
+	rotation_degrees = check_number(evaluate_input(inputs.DIRECTION))-90
 func motion_turnright(inputs, _fields) -> void:
-	rotation_degrees+=int(evaluate_input(inputs.DEGREES))
+	rotation_degrees+=check_number(evaluate_input(inputs.DEGREES))
 func motion_turnleft(inputs, _fields) -> void:
-	rotation_degrees-=int(evaluate_input(inputs.DEGREES))
+	rotation_degrees-=check_number(evaluate_input(inputs.DEGREES))
 func motion_movesteps(inputs, _fields) -> void:
-	position+=Vector2(int(evaluate_input(inputs.STEPS)),0).rotated(rotation)
+	position+=Vector2(check_number(evaluate_input(inputs.STEPS)),0).rotated(rotation)
 func motion_gotoxy(inputs, _fields) -> void:
-	position = Vector2(int(evaluate_input(inputs.X)),-int(evaluate_input(inputs.Y)))
+	position = Vector2(check_number(evaluate_input(inputs.X)),-check_number(evaluate_input(inputs.Y)))
 func motion_glidesecstoxy(inputs, _fields) -> void:
-	var target_position = Vector2(int(evaluate_input(inputs.X)), -int(evaluate_input(inputs.Y)))
+	var target_position = Vector2(check_number(evaluate_input(inputs.X)), -check_number(evaluate_input(inputs.Y)))
 	var start_position = position
 	
 	# Try to get the duration, with a fallback
@@ -183,7 +188,7 @@ func motion_glidesecstoxy(inputs, _fields) -> void:
 		
 		# Update elapsed time
 		elapsed_time += get_process_delta_time()
-		var t = min(elapsed_time / duration, 1.0)
+		var t = min(elapsed_time / duration, 0)
 		
 		# Update position using lerp
 		position = start_position.lerp(target_position, t)
@@ -216,12 +221,11 @@ func looks_hide(_inputs, _fields) -> void:
 func looks_show(_inputs, _fields) -> void:
 	visible = true
 func looks_setsizeto(inputs, _fields) -> void:
-	scale = Vector2(1,1)*(float(evaluate_input(inputs.SIZE))/100)
+	scale = Vector2(1,1)*(check_number(evaluate_input(inputs.SIZE))/100)
 func looks_changesizeby(inputs, _fields) -> void:
-	scale += Vector2(1,1)*(float(evaluate_input(inputs.CHANGE))/100)
+	scale += Vector2(1,1)*(check_number(evaluate_input(inputs.CHANGE))/100)
 	
 func event_broadcast(inputs, _fields) -> void:
-	#print("hehe")
 	$'../'.broadcast(evaluate_input(inputs.BROADCAST_INPUT))
 func event_broadcastandwait(inputs, _fields) -> void: # need to make work as intended
 	$'../'.broadcast(inputs.BROADCAST_INPUT[1][2])
@@ -232,6 +236,13 @@ func sound_play(inputs, _fields): #Have to adjust this whenever I feel it it
 	var sound = get_node_or_null(str(sounds.get(data.blocks[inputs.SOUND_MENU[1]].fields.SOUND_MENU[0])))
 	if sound != null:
 		sound.play()
+
+func sensing_mousex(_inputs, _fields):
+	return str(get_global_mouse_position().x)
+func sensing_mousey(_inputs, _fields):
+	return str(-get_global_mouse_position().y)
+func sensing_timer(_inputs, _fields):
+	return str($'../'.time_elapsed)
 
 func execute_broadcast(broadcast) -> void:
 	#for receivers in broadcast_receivers:

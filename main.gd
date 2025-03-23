@@ -2,11 +2,14 @@ extends Node2D
 var reader:ZIPReader
 var sb3
 var json
+var time_start = Time.get_unix_time_from_system()
+var time_now = 0
+var time_elapsed = 0
 
 func _init() -> void:
 	
 	reader = ZIPReader.new()
-	sb3 = reader.open("res://Project.sb3")
+	sb3 = reader.open("res://round block test.sb3")
 	json = reader.read_file("project.json").get_string_from_utf8()
 	json = JSON.parse_string(json)
 	
@@ -22,7 +25,7 @@ func create_sprites():
 				
 				var image = Image.new()
 				var error : Error
-				print(costume)
+				#print(costume)
 				var costumefilename
 				if costume.has("md5ext"):
 					costumefilename = costume.md5ext
@@ -55,7 +58,7 @@ func create_sprites():
 				Sprite.sounds.get_or_add(audio.name,node.name)
 			Sprite.data = target
 			Sprite.name = target.name
-			print(Sprite.data.currentCostume)
+			#print(Sprite.data.currentCostume)
 			Costumes.frame = int(Sprite.data.currentCostume)
 			if not target.isStage:
 				Sprite.rotation_degrees = Sprite.data.direction-90
@@ -70,3 +73,7 @@ func broadcast(sendbroadcast):
 	for sprite in get_children():
 		if not sprite.name == "Camera2D":
 			sprite.execute_broadcast(sendbroadcast)
+
+func _process(delta):
+	time_now = Time.get_unix_time_from_system()
+	time_elapsed = time_now - time_start

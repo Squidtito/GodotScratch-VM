@@ -49,12 +49,12 @@ func start(event, loop:String, repeattimes:int):
 						await get_tree().create_timer(soundnode.stream.get_length()).timeout
 					
 				if block_data.opcode == "motion_glidesecstoxy":
-					await get_tree().create_timer(float(block_data.inputs.SECS[1][1])).timeout
+					await get_tree().create_timer(float(evaluate_input(block_data.inputs.SECS))).timeout
 				if block_data.opcode == "control_wait": #I don't know how to make it wait from another funcion... it doesn't work...
-					await get_tree().create_timer(clampf(float(block_data.inputs.DURATION[1][1]),0.03,9999999999)).timeout
+					await get_tree().create_timer(clampf(float(evaluate_input(block_data.inputs.DURATION)),0.03,9999999999)).timeout
 				if block_data.opcode == "control_repeat":
 					#pass
-					await start(block_data.inputs.SUBSTACK[1],block_data.inputs.SUBSTACK[1], int(block_data.inputs.TIMES[1][1]))
+					await start(block_data.inputs.SUBSTACK[1],block_data.inputs.SUBSTACK[1], int(evaluate_input(block_data.inputs.TIMES)))
 				if block_data.next == null:
 					if block_data.opcode == "control_forever":
 						current_block = block_data.inputs.SUBSTACK[1]
@@ -70,12 +70,44 @@ func start(event, loop:String, repeattimes:int):
 							break
 				else:
 					current_block = block_data.next
-					print(str(block_data.opcode)+" | "+str(block_data.inputs))
 				if active == false:
 					break
 			#times+=1
 			await Engine.get_main_loop().process_frame
 
+func check_number(NUM):
+	if NUM == null: NUM = "0"
+	
+	if NUM.is_valid_int():
+		NUM = int(NUM)
+	elif NUM.is_valid_float():
+		NUM = float(NUM)
+		if floor(NUM) == NUM: NUM = int(NUM)
+	return NUM
+func evaluate_input(arg):
+	match int(arg[0]):
+		1:
+			if typeof(arg[1]) == TYPE_ARRAY:
+				if arg[1][0] == 11.0:
+					return arg[1][2]
+				else:
+					return arg[1][1]
+			else:
+				if arg[0] == 1.0:
+					var block_data = data.blocks[arg[1]]
+					var execute = callv(block_data.opcode, [block_data.inputs,block_data.fields])
+					return execute
+				else:
+					return arg[1]
+		3:
+			var block_data = data.blocks[arg[1]]
+			var execute = callv(block_data.opcode, [block_data.inputs,block_data.fields])
+			if execute == null: #if the function doesn't exist or returns null, this will at least kinda help not crash the entire project
+				return "0"
+			return execute
+		11:
+			return arg[1][2]
+			
 func fix_costume() -> void:
 	var costumefilename
 	if data.costumes[costumes.frame].has("md5ext"):
@@ -96,32 +128,57 @@ func fix_costume() -> void:
 	elif data.costumes[costumes.frame].dataFormat == "png":
 		costumes.scale = Vector2(0.5,0.5)
 
-func control_wait(_inputs, _fields) -> void:
-	pass
-func control_forever(_inputs, _fields) -> void:
-	pass
+func operator_random(inputs, _fields):
+	var FROM = check_number(evaluate_input(inputs.FROM))
+	var TO = check_number(evaluate_input(inputs.TO))
+	if typeof(FROM) == TYPE_FLOAT or typeof(TO) == TYPE_FLOAT:
+		return str(randf_range(FROM,TO))
+	else:
+		return str(randi_range(FROM,TO))
 
+func operator_add(inputs, _fields):
+	var NUM1 = check_number(evaluate_input(inputs.NUM1))
+	var NUM2 = check_number(evaluate_input(inputs.NUM2))
+	return str(NUM1+NUM2)
+func operator_subtract(inputs, _fields):
+	var NUM1 = check_number(evaluate_input(inputs.NUM1))
+	var NUM2 = check_number(evaluate_input(inputs.NUM2))
+	return str(NUM1-NUM2)
+func operator_multiply(inputs, _fields):
+	var NUM1 = check_number(evaluate_input(inputs.NUM1))
+	var NUM2 = check_number(evaluate_input(inputs.NUM2))
+	return str(NUM1*NUM2)
+func operator_divide(inputs, _fields):
+	var NUM1 = check_number(evaluate_input(inputs.NUM1))
+	var NUM2 = check_number(evaluate_input(inputs.NUM2))
+	return str(NUM1/NUM2)
+	
+func control_wait(_inputs, _fields) -> void: pass
+func control_forever(_inputs, _fields) -> void: pass
+func control_repeat(_inputs, _fields) -> void: pass
 func motion_changexby(inputs, _fields):
-	position.x += float(inputs.DX[1][1])
+	position.x += check_number(evaluate_input(inputs.DX))
 func motion_changeyby(inputs, _fields):
-	position.y -= float(inputs.DY[1][1])
+	position.y -= check_number(evaluate_input(inputs.DY))
+func motion_xposition(_inputs, _fields): return str(position.x)
+func motion_yposition(_inputs, _fields): return str(-position.y)
 func motion_pointindirection(inputs, _fields) -> void:
-	rotation_degrees = int(inputs.DIRECTION[1][1])-90
+	rotation_degrees = check_number(evaluate_input(inputs.DIRECTION))-90
 func motion_turnright(inputs, _fields) -> void:
-	rotation_degrees+=int(inputs.DEGREES[1][1])
+	rotation_degrees+=check_number(evaluate_input(inputs.DEGREES))
 func motion_turnleft(inputs, _fields) -> void:
-	rotation_degrees-=int(inputs.DEGREES[1][1])
+	rotation_degrees-=check_number(evaluate_input(inputs.DEGREES))
 func motion_movesteps(inputs, _fields) -> void:
-	position+=Vector2(int(inputs.STEPS[1][1]),0).rotated(rotation)
+	position+=Vector2(check_number(evaluate_input(inputs.STEPS)),0).rotated(rotation)
 func motion_gotoxy(inputs, _fields) -> void:
-	position = Vector2(int(inputs.X[1][1]),-int(inputs.Y[1][1]))
+	position = Vector2(check_number(evaluate_input(inputs.X)),-check_number(evaluate_input(inputs.Y)))
 func motion_glidesecstoxy(inputs, _fields) -> void:
-	var target_position = Vector2(int(inputs.X[1][1]), -int(inputs.Y[1][1]))
+	var target_position = Vector2(check_number(evaluate_input(inputs.X)), -check_number(evaluate_input(inputs.Y)))
 	var start_position = position
 	
 	# Try to get the duration, with a fallback
 	var duration = 1.0  # Default duration
-	duration = float(inputs.SECS[1][1])
+	duration = float(evaluate_input(inputs.SECS))
 	
 	var elapsed_time = 0.0
 	
@@ -131,7 +188,7 @@ func motion_glidesecstoxy(inputs, _fields) -> void:
 		
 		# Update elapsed time
 		elapsed_time += get_process_delta_time()
-		var t = min(elapsed_time / duration, 1.0)
+		var t = min(elapsed_time / duration, 0)
 		
 		# Update position using lerp
 		position = start_position.lerp(target_position, t)
@@ -142,6 +199,9 @@ func motion_glidesecstoxy(inputs, _fields) -> void:
 			break
 
 	
+func looks_costumenumbername(_inputs, fields):
+	if fields.NUMBER_NAME[0] == "number":
+		return str(costumes.frame+1)
 func looks_nextcostume(_inputs, _fields) -> void:
 	if costumes.frame == costumes.sprite_frames.get_frame_count("default")-1:
 		costumes.frame=0
@@ -149,32 +209,40 @@ func looks_nextcostume(_inputs, _fields) -> void:
 		costumes.frame+=1
 	fix_costume()
 func looks_switchcostumeto(inputs, _fields) -> void:
-	costumes.frame=costume_names.find(data.blocks[inputs.COSTUME[1]].fields.COSTUME[0])
+	costumes.frame=costume_names.find(evaluate_input(inputs.COSTUME))
 	fix_costume()
+func looks_costume(_inputs, fields):
+	return fields.COSTUME[0]
 func looks_seteffectto(inputs, fields) -> void:
 	if fields.EFFECT[0] == "GHOST":
-		modulate = Color(1,1,1,1-float(inputs.VALUE[1][1])/100)
+		modulate = Color(1,1,1,1-float(evaluate_input(inputs.VALUE))/100)
 func looks_hide(_inputs, _fields) -> void:
 	visible = false
 func looks_show(_inputs, _fields) -> void:
 	visible = true
 func looks_setsizeto(inputs, _fields) -> void:
-	scale = Vector2(1,1)*(float(inputs.SIZE[1][1])/100)
+	scale = Vector2(1,1)*(check_number(evaluate_input(inputs.SIZE))/100)
 func looks_changesizeby(inputs, _fields) -> void:
-	scale += Vector2(1,1)*(float(inputs.CHANGE[1][1])/100)
+	scale += Vector2(1,1)*(check_number(evaluate_input(inputs.CHANGE))/100)
 	
 func event_broadcast(inputs, _fields) -> void:
-	#print("hehe")
-	$'../'.broadcast(inputs.BROADCAST_INPUT[1][2])
+	$'../'.broadcast(evaluate_input(inputs.BROADCAST_INPUT))
 func event_broadcastandwait(inputs, _fields) -> void: # need to make work as intended
 	$'../'.broadcast(inputs.BROADCAST_INPUT[1][2])
 
 func sound_playuntildone(_inputs, _fields) -> void:
 	pass
-func sound_play(inputs, _fields):
+func sound_play(inputs, _fields): #Have to adjust this whenever I feel it it
 	var sound = get_node_or_null(str(sounds.get(data.blocks[inputs.SOUND_MENU[1]].fields.SOUND_MENU[0])))
 	if sound != null:
 		sound.play()
+
+func sensing_mousex(_inputs, _fields):
+	return str(get_global_mouse_position().x)
+func sensing_mousey(_inputs, _fields):
+	return str(-get_global_mouse_position().y)
+func sensing_timer(_inputs, _fields):
+	return str($'../'.time_elapsed)
 
 func execute_broadcast(broadcast) -> void:
 	#for receivers in broadcast_receivers:

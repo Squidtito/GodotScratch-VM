@@ -220,7 +220,8 @@ func looks_seteffectto(inputs, fields) -> void:
 		modulate = Color(1,1,1,1-float(evaluate_input(inputs.VALUE))/100)
 func looks_changeeffectby(inputs, fields) -> void:
 	if fields.EFFECT[0] == "GHOST":
-		modulate += Color(0,0,0,-float(evaluate_input(inputs.CHANGE))/100)
+		modulate -= Color(0,0,0,float(evaluate_input(inputs.CHANGE))/100)
+func looks_cleargraphiceffects(_inputs, _fields): modulate = Color(1,1,1,1)
 func looks_hide(_inputs, _fields) -> void:
 	visible = false
 func looks_show(_inputs, _fields) -> void:

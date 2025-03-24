@@ -9,13 +9,13 @@ This is a repository trying to recreate the ScratchVM within Godot
 
 # What works:
 	A few blocks/roundblocks
+ 	Variables
 	Broadcasts
 	Sprites
 	Costumes
 	Sounds (Kinda, some are a static mess or are incorrect in some way)
 	(Maybe some more I'm not thinking about right now)
  # What doesn't work:
-	Variables
 	Custom blocks
 	Text in SVGs
 	If statements

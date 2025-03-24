@@ -85,6 +85,7 @@ func check_number(NUM):
 		NUM = float(NUM)
 		if floor(NUM) == NUM: 
 			NUM = int(NUM)
+	else: NUM = 0
 	return NUM
 func evaluate_input(arg):
 	match int(arg[0]):
@@ -102,13 +103,14 @@ func evaluate_input(arg):
 				else:
 					return arg[1]
 		3:
+			if typeof(arg[1]) == TYPE_ARRAY:
+				if arg[1][0] == 12.0:
+					return str(getvariable(arg[1][2])[1])
 			var block_data = data.blocks[arg[1]]
 			var execute = callv(block_data.opcode, [block_data.inputs,block_data.fields])
 			if execute == null: #if the function doesn't exist or returns null, this will at least kinda help not crash the entire project
 				return "0"
 			return execute
-		11:
-			return arg[1][2]
 			
 func fix_costume() -> void:
 	var costumefilename
@@ -137,7 +139,6 @@ func operator_random(inputs, _fields):
 		return str(randf_range(FROM,TO))
 	else:
 		return str(randi_range(FROM,TO))
-
 func operator_add(inputs, _fields):
 	var NUM1 = check_number(evaluate_input(inputs.NUM1))
 	var NUM2 = check_number(evaluate_input(inputs.NUM2))
@@ -154,6 +155,37 @@ func operator_divide(inputs, _fields):
 	var NUM1 = check_number(evaluate_input(inputs.NUM1))
 	var NUM2 = check_number(evaluate_input(inputs.NUM2))
 	return str(NUM1/NUM2)
+func operator_mathop(inputs, fields):
+	var NUM = check_number(evaluate_input(inputs.NUM))
+	match fields.OPERATOR[0]:
+		"abs":
+			return str(abs(NUM))
+		"floor":
+			return str(floor(NUM))
+		"ceiling":
+			return str(ceil(NUM))
+		"sqrt":
+			return str(sqrt(NUM))
+		"cos":
+			return str(cos(deg_to_rad(NUM)))
+		"sin":
+			return str(sin(deg_to_rad(NUM)))
+		"tan":
+			return str(tan(NUM))
+		"asin":
+			return rad_to_deg(asin(NUM))
+		"acos":
+			return rad_to_deg(acos(NUM))
+		"atan":
+			return rad_to_deg(atan(NUM))
+		"ln":
+			return str(log(NUM))
+		"log":
+			return log(NUM) / log(10)
+		"e ^":
+			return exp(log(NUM))
+		"10 ^":
+			return str(pow(NUM,10))
 	
 func control_wait(_inputs, _fields) -> void: pass
 func control_forever(_inputs, _fields) -> void: pass
@@ -174,6 +206,10 @@ func motion_movesteps(inputs, _fields) -> void:
 	position+=Vector2(check_number(evaluate_input(inputs.STEPS)),0).rotated(rotation)
 func motion_gotoxy(inputs, _fields) -> void:
 	position = Vector2(check_number(evaluate_input(inputs.X)),-check_number(evaluate_input(inputs.Y)))
+func motion_sety(inputs, _fields) -> void:
+	position.y = -check_number(evaluate_input(inputs.Y))
+func motion_setx(inputs, _fields) -> void:
+	position.x = check_number(evaluate_input(inputs.X))
 func motion_glidesecstoxy(inputs, _fields) -> void:
 	var target_position = Vector2(check_number(evaluate_input(inputs.X)), -check_number(evaluate_input(inputs.Y)))
 	var start_position = position
@@ -251,6 +287,14 @@ func sensing_timer(_inputs, _fields):
 	return str($'../'.time_elapsed)
 func sensing_resettimer(_inputs, _fields):
 	$'../'.time_start = Time.get_unix_time_from_system()
+
+func data_changevariableby(inputs, fields):
+	var variable = getvariable(fields.VARIABLE[1])
+	variable[1] = str(check_number(variable[1])+check_number(evaluate_input((inputs.VALUE))))
+func data_setvariableto(inputs, fields):
+	var variable = getvariable(fields.VARIABLE[1])
+	variable[1] = inputs.VALUE[1][1]
+
 func execute_broadcast(broadcast) -> void:
 	#for receivers in broadcast_receivers:
 	if broadcast_receivers.has(broadcast):
@@ -259,6 +303,13 @@ func execute_broadcast(broadcast) -> void:
 			thread.start(start.bind(receiver,"",-1))
 			thread_events.append(thread)
 	pass
+
+func getvariable(variable):
+	if data.variables.has(variable):
+		return data.variables[variable]
+	else:
+		#print($'../Stage'.data.variables)
+		return $'../Stage'.data.variables[variable]
 
 func _exit_tree() -> void:
 	for thread in thread_events:

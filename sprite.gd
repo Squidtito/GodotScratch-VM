@@ -216,7 +216,7 @@ func motion_glidesecstoxy(inputs, _fields) -> void:
 	
 	# Try to get the duration, with a fallback
 	var duration = 1.0  # Default duration
-	duration = float(evaluate_input(inputs.SECS))
+	duration = check_number((evaluate_input(inputs.SECS)))
 	
 	var elapsed_time = 0.0
 	
@@ -226,7 +226,7 @@ func motion_glidesecstoxy(inputs, _fields) -> void:
 		
 		# Update elapsed time
 		elapsed_time += get_process_delta_time()
-		var t = min(elapsed_time / duration, 0)
+		var t = min(elapsed_time / duration, 1)
 		
 		# Update position using lerp
 		position = start_position.lerp(target_position, t)

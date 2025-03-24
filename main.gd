@@ -63,9 +63,9 @@ func create_sprites():
 			if not target.isStage:
 				Sprite.rotation_degrees = Sprite.data.direction-90
 				Sprite.visible = Sprite.data.visible
-				Sprite.position = Vector2(Sprite.data.x,Sprite.data.y*-1)
+				Sprite.position = Vector2(Sprite.data.x,-Sprite.data.y)
 				Sprite.z_index = Sprite.data.layerOrder
-				Sprite.scale = Vector2(1,1)*(float(Sprite.data.size)/100)
+				Sprite.scale = Vector2(1,1)*(float(Sprite.data.size)*.01)
 			Sprite.events_search()
 			add_child(Sprite)
 			

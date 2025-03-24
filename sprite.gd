@@ -120,8 +120,8 @@ func fix_costume() -> void:
 		costumefilename = data.costumes[costumes.frame].assetId+".png"
 	if str(costumefilename.get_extension()) == "svg":
 		costumes.position = Vector2(
-						costumes.sprite_frames.get_frame_texture("default",costumes.frame).get_width()/2,
-						costumes.sprite_frames.get_frame_texture("default",costumes.frame).get_height()/2  # Fix: Use -1 instead of 0
+						costumes.sprite_frames.get_frame_texture("default",costumes.frame).get_width()*.5,
+						costumes.sprite_frames.get_frame_texture("default",costumes.frame).get_height()*.5  # Fix: Use -1 instead of 0
 					)
 		costumes.offset = Vector2(
 						data.costumes[costumes.frame].rotationCenterX * -1,
@@ -253,19 +253,19 @@ func looks_costume(_inputs, fields):
 	return fields.COSTUME[0]
 func looks_seteffectto(inputs, fields) -> void:
 	if fields.EFFECT[0] == "GHOST":
-		modulate.a = 1-float(evaluate_input(inputs.VALUE))/100
+		modulate.a = 1-float(evaluate_input(inputs.VALUE))*.01
 func looks_changeeffectby(inputs, fields) -> void:
 	if fields.EFFECT[0] == "GHOST":
-		modulate.a -= float(evaluate_input(inputs.CHANGE))/100
+		modulate.a -= float(evaluate_input(inputs.CHANGE))*.01
 func looks_cleargraphiceffects(_inputs, _fields): modulate = Color(1,1,1,1)
 func looks_hide(_inputs, _fields) -> void:
 	visible = false
 func looks_show(_inputs, _fields) -> void:
 	visible = true
 func looks_setsizeto(inputs, _fields) -> void:
-	scale = Vector2(1,1)*(float(evaluate_input(inputs.SIZE))/100)
+	scale = Vector2(1,1)*(float(evaluate_input(inputs.SIZE))*.01)
 func looks_changesizeby(inputs, _fields) -> void:
-	scale += Vector2(1,1)*(float(evaluate_input(inputs.CHANGE))/100)
+	scale += Vector2(1,1)*(float(evaluate_input(inputs.CHANGE))*.01)
 	
 func event_broadcast(inputs, _fields) -> void:
 	$'../'.broadcast(evaluate_input(inputs.BROADCAST_INPUT))

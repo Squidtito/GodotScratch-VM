@@ -8,7 +8,7 @@ This is a repository trying to recreate the ScratchVM within Godot
 
 
 # What works:
-	A few blocks
+	A few blocks/roundblocks
 	Broadcasts
 	Sprites
 	Costumes
@@ -17,7 +17,6 @@ This is a repository trying to recreate the ScratchVM within Godot
  # What doesn't work:
 	Variables
 	Custom blocks
-	Support for round blocks
 	Text in SVGs
 	If statements
 	While loops

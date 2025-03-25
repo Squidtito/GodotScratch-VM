@@ -237,6 +237,14 @@ func motion_glidesecstoxy(inputs, _fields) -> void:
 			break
 
 	
+func looks_gotofrontback(_inputs, fields):
+	print(fields)
+	var type = fields.FRONT_BACK[0]
+	match type:
+		"front":
+			$'../'.change_sprite_layer(1, self)
+		"back":
+			$'../'.change_sprite_layer(0, self)
 func looks_costumenumbername(_inputs, fields):
 	if fields.NUMBER_NAME[0] == "number":
 		return str(costumes.frame+1)
@@ -293,7 +301,7 @@ func data_changevariableby(inputs, fields):
 	variable[1] = str(check_number(variable[1])+check_number(evaluate_input((inputs.VALUE))))
 func data_setvariableto(inputs, fields):
 	var variable = getvariable(fields.VARIABLE[1])
-	variable[1] = inputs.VALUE[1][1]
+	variable[1] = evaluate_input((inputs.VALUE))
 
 func execute_broadcast(broadcast) -> void:
 	#for receivers in broadcast_receivers:

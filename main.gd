@@ -5,6 +5,7 @@ var json
 var time_start = Time.get_unix_time_from_system()
 var time_now = 0
 var time_elapsed = 0
+var sprite_order = []
 
 func _init() -> void:
 	
@@ -14,8 +15,10 @@ func _init() -> void:
 	json = JSON.parse_string(json)
 	
 	create_sprites()
-
+	update_sprite_layers()
 func create_sprites():
+	for i in json.targets.size()-1:
+		sprite_order.append("")
 	for target in json.targets:
 		if 1:
 			var Sprite = preload("res://Sprite.tscn").instantiate()
@@ -64,11 +67,28 @@ func create_sprites():
 				Sprite.rotation_degrees = Sprite.data.direction-90
 				Sprite.visible = Sprite.data.visible
 				Sprite.position = Vector2(Sprite.data.x,-Sprite.data.y)
-				Sprite.z_index = Sprite.data.layerOrder
+				#Sprite.z_index = Sprite.data.layerOrder
+				sprite_order[Sprite.data.layerOrder-1] = Sprite.name
+				print(Sprite.z_index)
 				Sprite.scale = Vector2(1,1)*(float(Sprite.data.size)*.01)
 			Sprite.events_search()
 			add_child(Sprite)
+			print(sprite_order)
 			
+func change_sprite_layer(type,Sprite, num=0):
+	sprite_order.remove_at(Sprite.z_index-1)
+	if type == 0: #go to de back
+		sprite_order.insert(0,Sprite.name)
+	elif type == 1: #go to de front
+		sprite_order.insert(sprite_order.size(),Sprite.name)
+	print(sprite_order)
+	update_sprite_layers()
+	
+func update_sprite_layers(): #I'm going to do this the dumb way, although if I want broadcasts to work accurately (front sprite to back) I'll have to reimplement this, but it's current 12:42AM so I am very tired
+	var index = 0
+	for sprite in sprite_order:
+		index+=1
+		get_node(str(sprite)).z_index = index
 func broadcast(sendbroadcast):
 	for sprite in get_children():
 		if not sprite.name == "Camera2D":

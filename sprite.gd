@@ -29,12 +29,12 @@ func _ready() -> void:
 	fix_costume()
 
 #@warning_ignore("")
-func start(event, loop:String, repeattimes:int):
+func start(event, loop:String="", repeattimes:int=0, nextblock:bool=true):
 	var active : bool = true
 	var current_block
 	var block_data
 	var times: int = 0
-	if loop == "":
+	if loop == "" and nextblock:
 		current_block = data.blocks[event].next
 	else:
 		current_block = event
@@ -44,19 +44,22 @@ func start(event, loop:String, repeattimes:int):
 				block_data = data.blocks[current_block]
 				call_deferred(block_data.opcode, block_data.inputs,block_data.fields)
 				#callv(block_data.opcode, [block_data.inputs,block_data.fields])
-				if block_data.opcode == "sound_playuntildone":
-					sound_play(block_data.inputs,block_data.fields)
-					var soundnode : AudioStreamPlayer = get_node_or_null(str(sounds.get(data.blocks[block_data.inputs.SOUND_MENU[1]].fields.SOUND_MENU[0])))
-					if soundnode != null:
-						await get_tree().create_timer(soundnode.stream.get_length()).timeout
-					
-				if block_data.opcode == "motion_glidesecstoxy":
-					await get_tree().create_timer(float(evaluate_input(block_data.inputs.SECS))).timeout
-				if block_data.opcode == "control_wait": #I don't know how to make it wait from another funcion... it doesn't work...
-					await get_tree().create_timer(clampf(float(evaluate_input(block_data.inputs.DURATION)),0.03,9999999999)).timeout
-				if block_data.opcode == "control_repeat":
-					#pass
-					await start(block_data.inputs.SUBSTACK[1],block_data.inputs.SUBSTACK[1], int(evaluate_input(block_data.inputs.TIMES)))
+				match block_data.opcode:
+					"sound_playuntildone":
+						sound_play(block_data.inputs,block_data.fields)
+						var soundnode : AudioStreamPlayer = get_node_or_null(str(sounds.get(data.blocks[block_data.inputs.SOUND_MENU[1]].fields.SOUND_MENU[0])))
+						if soundnode != null:
+							await get_tree().create_timer(soundnode.stream.get_length()).timeout
+					"motion_glidesecstoxy":
+						await get_tree().create_timer(float(evaluate_input(block_data.inputs.SECS))).timeout
+					"control_wait":
+						await get_tree().create_timer(clampf(float(evaluate_input(block_data.inputs.DURATION)),0.03,9999999999)).timeout
+					"control_repeat":
+						await start(block_data.inputs.SUBSTACK[1],block_data.inputs.SUBSTACK[1], int(evaluate_input(block_data.inputs.TIMES)))
+					"control_if":
+						var statement = data.blocks[block_data.inputs.CONDITION[1]]
+						if callv(statement.opcode, [statement.inputs, statement.fields]):
+							await start(block_data.inputs.SUBSTACK[1], "", -1,false)
 				if block_data.next == null:
 					if block_data.opcode == "control_forever":
 						current_block = block_data.inputs.SUBSTACK[1]
@@ -75,9 +78,18 @@ func start(event, loop:String, repeattimes:int):
 				if active == false:
 					break
 			#times+=1
-			await Engine.get_main_loop().process_frame
+			if nextblock:
+				await Engine.get_main_loop().process_frame
 func check_number(NUM):
 	if NUM == null: NUM = "0"
+	match NUM:
+		
+		null:
+			NUM = "0"
+		false:
+			NUM = "0"
+		true:
+			NUM = "1"
 	
 	if NUM.is_valid_int():
 		NUM = int(NUM)
@@ -100,13 +112,17 @@ func evaluate_input(arg):
 					var block_data = data.blocks[arg[1]]
 					var execute = callv(block_data.opcode, [block_data.inputs,block_data.fields])
 					return execute
+					
 				else:
 					return arg[1]
 		3:
+			var block_data
 			if typeof(arg[1]) == TYPE_ARRAY:
 				if arg[1][0] == 12.0:
 					return str(getvariable(arg[1][2])[1])
-			var block_data = data.blocks[arg[1]]
+				block_data = data.blocks[arg[1][1]]
+			else:
+				block_data = data.blocks[arg[1]]
 			var execute = callv(block_data.opcode, [block_data.inputs,block_data.fields])
 			if execute == null: #if the function doesn't exist or returns null, this will at least kinda help not crash the entire project
 				return "0"
@@ -132,6 +148,13 @@ func fix_costume() -> void:
 	elif data.costumes[costumes.frame].dataFormat == "png":
 		costumes.scale = Vector2(0.5,0.5)
 
+
+func operator_equals(inputs, _fields):
+	var OPERAND1 = evaluate_input(inputs.OPERAND1)
+	var OPERAND2 = evaluate_input(inputs.OPERAND2)
+	
+	if OPERAND1 == OPERAND2: return true
+	return false
 func operator_random(inputs, _fields):
 	var FROM = check_number(evaluate_input(inputs.FROM))
 	var TO = check_number(evaluate_input(inputs.TO))
@@ -190,6 +213,7 @@ func operator_mathop(inputs, fields):
 func control_wait(_inputs, _fields) -> void: pass
 func control_forever(_inputs, _fields) -> void: pass
 func control_repeat(_inputs, _fields) -> void: pass
+func control_if(_inputs, _fields)  -> void: pass
 func motion_changexby(inputs, _fields):
 	position.x += check_number(evaluate_input(inputs.DX))
 func motion_changeyby(inputs, _fields):
@@ -238,7 +262,6 @@ func motion_glidesecstoxy(inputs, _fields) -> void:
 
 	
 func looks_gotofrontback(_inputs, fields):
-	print(fields)
 	var type = fields.FRONT_BACK[0]
 	match type:
 		"front":
@@ -295,6 +318,16 @@ func sensing_timer(_inputs, _fields):
 	return str($'../'.time_elapsed)
 func sensing_resettimer(_inputs, _fields):
 	$'../'.time_start = Time.get_unix_time_from_system()
+func sensing_keypressed(inputs, _fields):
+	if Input.is_anything_pressed():
+		if Input.is_action_pressed(evaluate_input([3,inputs.KEY_OPTION])):
+			return true
+		if evaluate_input([3,inputs.KEY_OPTION]) == "any":
+			return Input.is_anything_pressed()
+	return false
+func sensing_keyoptions(_inputs, fields):
+	return fields.KEY_OPTION[0]
+	
 
 func data_changevariableby(inputs, fields):
 	var variable = getvariable(fields.VARIABLE[1])

@@ -75,7 +75,7 @@ func create_sprites():
 			add_child(Sprite)
 			print(sprite_order)
 			
-func change_sprite_layer(type,Sprite, num=0):
+func change_sprite_layer(type,Sprite):
 	sprite_order.remove_at(Sprite.z_index-1)
 	if type == 0: #go to de back
 		sprite_order.insert(0,Sprite.name)
@@ -94,6 +94,6 @@ func broadcast(sendbroadcast):
 		if not sprite.name == "Camera2D":
 			sprite.execute_broadcast(sendbroadcast)
 
-func _process(delta):
+func _process(_delta):
 	time_now = Time.get_unix_time_from_system()
 	time_elapsed = time_now - time_start

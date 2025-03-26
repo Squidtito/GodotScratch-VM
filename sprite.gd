@@ -320,10 +320,11 @@ func sensing_resettimer(_inputs, _fields):
 	$'../'.time_start = Time.get_unix_time_from_system()
 func sensing_keypressed(inputs, _fields):
 	if Input.is_anything_pressed():
-		if Input.is_action_pressed(evaluate_input([3,inputs.KEY_OPTION])):
+		var input = evaluate_input([3,inputs.KEY_OPTION])
+		if input == "any":
 			return true
-		if evaluate_input([3,inputs.KEY_OPTION]) == "any":
-			return Input.is_anything_pressed()
+		elif Input.is_action_pressed(input):
+			return true
 	return false
 func sensing_keyoptions(_inputs, fields):
 	return fields.KEY_OPTION[0]

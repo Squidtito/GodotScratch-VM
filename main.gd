@@ -69,11 +69,9 @@ func create_sprites():
 				Sprite.position = Vector2(Sprite.data.x,-Sprite.data.y)
 				#Sprite.z_index = Sprite.data.layerOrder
 				sprite_order[Sprite.data.layerOrder-1] = Sprite.name
-				print(Sprite.z_index)
 				Sprite.scale = Vector2(1,1)*(float(Sprite.data.size)*.01)
 			Sprite.events_search()
 			add_child(Sprite)
-			print(sprite_order)
 			
 func change_sprite_layer(type,Sprite):
 	sprite_order.remove_at(Sprite.z_index-1)
@@ -81,18 +79,18 @@ func change_sprite_layer(type,Sprite):
 		sprite_order.insert(0,Sprite.name)
 	elif type == 1: #go to de front
 		sprite_order.insert(sprite_order.size(),Sprite.name)
-	print(sprite_order)
 	update_sprite_layers()
 	
-func update_sprite_layers(): #I'm going to do this the dumb way, although if I want broadcasts to work accurately (front sprite to back) I'll have to reimplement this, but it's current 12:42AM so I am very tired
+func update_sprite_layers():
 	var index = 0
 	for sprite in sprite_order:
 		index+=1
 		get_node(str(sprite)).z_index = index
 func broadcast(sendbroadcast):
-	for sprite in get_children():
-		if not sprite.name == "Camera2D":
-			sprite.execute_broadcast(sendbroadcast)
+	var sprite_order_reversed = sprite_order
+	sprite_order_reversed.reverse()
+	for sprite in sprite_order:
+		get_node(str(sprite)).execute_broadcast(sendbroadcast)
 
 func _process(_delta):
 	time_now = Time.get_unix_time_from_system()

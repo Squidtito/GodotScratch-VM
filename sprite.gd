@@ -155,14 +155,14 @@ func operator_lt(inputs, _fields):
 	if OPERAND1 < OPERAND2: return true
 	return false
 func operator_gt(inputs, _fields):
-	var OPERAND1 = evaluate_input(inputs.OPERAND1)
-	var OPERAND2 = evaluate_input(inputs.OPERAND2)
+	var OPERAND1 = check_number(evaluate_input(inputs.OPERAND1))
+	var OPERAND2 = check_number(evaluate_input(inputs.OPERAND2))
 	
 	if OPERAND1 > OPERAND2: return true
 	return false
 func operator_equals(inputs, _fields):
-	var OPERAND1 = evaluate_input(inputs.OPERAND1)
-	var OPERAND2 = evaluate_input(inputs.OPERAND2)
+	var OPERAND1 = check_number(evaluate_input(inputs.OPERAND1))
+	var OPERAND2 = check_number(evaluate_input(inputs.OPERAND2))
 	
 	if OPERAND1 == OPERAND2: return true
 	return false

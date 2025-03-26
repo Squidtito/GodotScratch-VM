@@ -16,6 +16,13 @@ func _init() -> void:
 	
 	create_sprites()
 	update_sprite_layers()
+	
+func _ready() -> void:
+	var sprite_order_reversed = sprite_order
+	sprite_order_reversed.reverse()
+	get_node("Stage").begin()
+	for sprite in sprite_order:
+		get_node(str(sprite)).begin()
 func create_sprites():
 	for i in json.targets.size()-1:
 		sprite_order.append("")
@@ -74,18 +81,25 @@ func create_sprites():
 			add_child(Sprite)
 			
 func change_sprite_layer(type,Sprite):
-	sprite_order.remove_at(Sprite.z_index-1)
-	if type == 0: #go to de back
-		sprite_order.insert(0,Sprite.name)
-	elif type == 1: #go to de front
-		sprite_order.insert(sprite_order.size(),Sprite.name)
+	if sprite_order.size() == 2: #For the life of me I cannot figure out why it messes up when there's only two sprites, so I'm making this disgusting workaround
+		if type == 0:
+			if not sprite_order[0] == Sprite.name: sprite_order.reverse()
+		if type == 1:
+			if not sprite_order[1] == Sprite.name: sprite_order.reverse()
+	else:
+		sprite_order.remove_at(Sprite.z_index)
+		if type == 0: #go to de back
+			sprite_order.insert(0,Sprite.name)
+		elif type == 1: #go to de front
+			sprite_order.insert(sprite_order.size()-1,Sprite.name)
 	update_sprite_layers()
 	
 func update_sprite_layers():
 	var index = 0
 	for sprite in sprite_order:
-		index+=1
 		get_node(str(sprite)).z_index = index
+		index+=1
+	print(sprite_order)
 func broadcast(sendbroadcast):
 	var sprite_order_reversed = sprite_order
 	sprite_order_reversed.reverse()

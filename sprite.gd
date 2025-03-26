@@ -1,5 +1,6 @@
 extends Node2D
 @onready var costumes = $Costumes
+@onready var Stage = $'../Stage'
 var costume_names : Array = []
 var data
 var flagclicked : Array = []
@@ -23,10 +24,10 @@ func events_search() -> void:
 					broadcast_receivers[block_data.fields.BROADCAST_OPTION[1]].append(block)
 
 func _ready() -> void:
-	set_process(false)
+	fix_costume()
+func begin():
 	for event in thread_events.size():
 		thread_events[event].start(start.bind(flagclicked[event], "", -1))
-	fix_costume()
 
 #@warning_ignore("")
 func start(event, loop:String="", repeattimes:int=0, nextblock:bool=true):
@@ -148,7 +149,18 @@ func fix_costume() -> void:
 	elif data.costumes[costumes.frame].dataFormat == "png":
 		costumes.scale = Vector2(0.5,0.5)
 
-
+func operator_lt(inputs, _fields):
+	var OPERAND1 = evaluate_input(inputs.OPERAND1)
+	var OPERAND2 = evaluate_input(inputs.OPERAND2)
+	
+	if OPERAND1 < OPERAND2: return true
+	return false
+func operator_gt(inputs, _fields):
+	var OPERAND1 = evaluate_input(inputs.OPERAND1)
+	var OPERAND2 = evaluate_input(inputs.OPERAND2)
+	
+	if OPERAND1 > OPERAND2: return true
+	return false
 func operator_equals(inputs, _fields):
 	var OPERAND1 = evaluate_input(inputs.OPERAND1)
 	var OPERAND2 = evaluate_input(inputs.OPERAND2)
@@ -162,6 +174,14 @@ func operator_random(inputs, _fields):
 		return str(randf_range(FROM,TO))
 	else:
 		return str(randi_range(FROM,TO))
+func operator_not(inputs, _fields):
+	var block = data.blocks[inputs.OPERAND[1]]
+	return not callv(block.opcode,[block.inputs,block.fields])
+func operator_contains(inputs, _fields):
+	var STRING1:String = evaluate_input(inputs.STRING1)
+	var STRING2:String = evaluate_input(inputs.STRING2)
+	print(STRING1.contains(STRING2))
+	return STRING1.contains(STRING2)
 func operator_add(inputs, _fields):
 	var NUM1 = check_number(evaluate_input(inputs.NUM1))
 	var NUM2 = check_number(evaluate_input(inputs.NUM2))
@@ -265,8 +285,10 @@ func looks_gotofrontback(_inputs, fields):
 	var type = fields.FRONT_BACK[0]
 	match type:
 		"front":
+			print("front")
 			$'../'.change_sprite_layer(1, self)
 		"back":
+			print("back")
 			$'../'.change_sprite_layer(0, self)
 func looks_costumenumbername(_inputs, fields):
 	if fields.NUMBER_NAME[0] == "number":
@@ -328,7 +350,8 @@ func sensing_keypressed(inputs, _fields):
 	return false
 func sensing_keyoptions(_inputs, fields):
 	return fields.KEY_OPTION[0]
-	
+#func sensing_touchingobject(_inputs, _fields):
+#	return true
 
 func data_changevariableby(inputs, fields):
 	var variable = getvariable(fields.VARIABLE[1])
@@ -351,7 +374,8 @@ func getvariable(variable):
 		return data.variables[variable]
 	else:
 		#print($'../Stage'.data.variables)
-		return $'../Stage'.data.variables[variable]
+		#print(ba)
+		return Stage.data.variables[variable]
 
 func _exit_tree() -> void:
 	for thread in thread_events:

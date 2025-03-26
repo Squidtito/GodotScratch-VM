@@ -328,6 +328,8 @@ func sound_play(inputs, _fields): #Have to adjust this whenever I feel it it
 	if sound != null:
 		sound.play()
 
+func sensing_mousedown(_inputs, _fields):
+	return Input.is_action_pressed("mouse down")
 func sensing_mousex(_inputs, _fields):
 	return str(get_global_mouse_position().x)
 func sensing_mousey(_inputs, _fields):

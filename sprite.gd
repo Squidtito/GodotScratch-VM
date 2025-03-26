@@ -180,7 +180,6 @@ func operator_not(inputs, _fields):
 func operator_contains(inputs, _fields):
 	var STRING1:String = evaluate_input(inputs.STRING1)
 	var STRING2:String = evaluate_input(inputs.STRING2)
-	print(STRING1.contains(STRING2))
 	return STRING1.contains(STRING2)
 func operator_add(inputs, _fields):
 	var NUM1 = check_number(evaluate_input(inputs.NUM1))
@@ -285,10 +284,8 @@ func looks_gotofrontback(_inputs, fields):
 	var type = fields.FRONT_BACK[0]
 	match type:
 		"front":
-			print("front")
 			$'../'.change_sprite_layer(1, self)
 		"back":
-			print("back")
 			$'../'.change_sprite_layer(0, self)
 func looks_costumenumbername(_inputs, fields):
 	if fields.NUMBER_NAME[0] == "number":

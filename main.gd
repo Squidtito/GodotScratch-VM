@@ -99,7 +99,6 @@ func update_sprite_layers():
 	for sprite in sprite_order:
 		get_node(str(sprite)).z_index = index
 		index+=1
-	print(sprite_order)
 func broadcast(sendbroadcast):
 	var sprite_order_reversed = sprite_order
 	sprite_order_reversed.reverse()

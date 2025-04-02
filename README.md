@@ -18,6 +18,7 @@ This is a repository trying to recreate the ScratchVM within Godot
 	Sounds (Kinda, some are a static mess or are incorrect in some way or don't play at all)
 	(Maybe some more I'm not thinking about right now)
  # What doesn't work:
+ 	layers (while the implementation is there, it does not work correctly)
 	Custom blocks
 	Text in SVGs
 	While loops

@@ -102,6 +102,7 @@ func update_sprite_layers():
 func broadcast(sendbroadcast):
 	var sprite_order_reversed = sprite_order
 	sprite_order_reversed.reverse()
+	$Stage.execute_broadcast(sendbroadcast)
 	for sprite in sprite_order:
 		get_node(str(sprite)).execute_broadcast(sendbroadcast)
 

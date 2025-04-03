@@ -196,6 +196,8 @@ func operator_divide(inputs, _fields):
 	var NUM1 = check_number(evaluate_input(inputs.NUM1))
 	var NUM2 = check_number(evaluate_input(inputs.NUM2))
 	return str(NUM1/NUM2)
+func operator_round(inputs, _fields):
+	return str(round(check_number(evaluate_input(inputs.NUM))))
 func operator_mathop(inputs, fields):
 	var NUM = check_number(evaluate_input(inputs.NUM))
 	match fields.OPERATOR[0]:
@@ -298,6 +300,8 @@ func looks_nextcostume(_inputs, _fields) -> void:
 func looks_switchcostumeto(inputs, _fields) -> void:
 	costumes.frame=costume_names.find(evaluate_input(inputs.COSTUME))
 	fix_costume()
+func looks_size(_inputs, _fields):
+	return str(scale.x*100)
 func looks_costume(_inputs, fields):
 	return fields.COSTUME[0]
 func looks_seteffectto(inputs, fields) -> void:
@@ -348,6 +352,8 @@ func sensing_keypressed(inputs, _fields):
 	return false
 func sensing_keyoptions(_inputs, fields):
 	return fields.KEY_OPTION[0]
+func sensing_username(_inputs, _fields):
+	return "GodotScratch"
 #func sensing_touchingobject(_inputs, _fields):
 #	return true
 

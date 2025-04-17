@@ -52,6 +52,15 @@ func create_sprites():
 				else:
 					Costumes.get_sprite_frames().add_frame("default", ImageTexture.create_from_image(image))
 					Sprite.costume_names.append(costume.name)
+					if image != null:
+
+						var bitmap: BitMap = BitMap.new()
+						bitmap.create_from_image_alpha(image)
+						var polygons: Array = bitmap.opaque_to_polygons(Rect2(Vector2(0, 0), image.get_size()))
+						if polygons.size() > 0:
+							Sprite.costumepolygons.append(polygons[0])
+						else:
+							Sprite.costumepolygons.append([])
 			for audio in target.sounds:
 				var soundfile = reader.read_file(audio.md5ext)
 				var sound
@@ -81,6 +90,7 @@ func create_sprites():
 			add_child(Sprite)
 			
 func change_sprite_layer(type,Sprite):
+	
 	if sprite_order.size() == 2: #For the life of me I cannot figure out why it messes up when there's only two sprites, so I'm making this disgusting workaround
 		if type == 0:
 			if not sprite_order[0] == Sprite.name: sprite_order.reverse()
@@ -97,14 +107,19 @@ func change_sprite_layer(type,Sprite):
 func update_sprite_layers():
 	var index = 0
 	for sprite in sprite_order:
+		print(get_node(str(sprite)).name)
 		get_node(str(sprite)).z_index = index
 		index+=1
 func broadcast(sendbroadcast):
-	var sprite_order_reversed = sprite_order
+	#$Stage.z_index = -1
+	var sprite_order_reversed : Array
+	sprite_order_reversed.append_array(sprite_order)
 	sprite_order_reversed.reverse()
+	print(sprite_order)
+	print(sprite_order_reversed)
+	$Stage.execute_broadcast(sendbroadcast)
 	for sprite in sprite_order:
 		get_node(str(sprite)).execute_broadcast(sendbroadcast)
-
 func _process(_delta):
 	time_now = Time.get_unix_time_from_system()
 	time_elapsed = time_now - time_start

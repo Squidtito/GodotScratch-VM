@@ -1,6 +1,7 @@
-extends Node2D
+extends CharacterBody2D
 @onready var costumes = $Costumes
 @onready var Stage = $'../Stage'
+@onready var collision = $Collision
 var costume_names : Array = []
 var data
 var flagclicked : Array = []
@@ -8,6 +9,7 @@ var thread_events : Array = []
 var broadcast_receivers : Dictionary = {}
 var sounds : Dictionary = {}
 var active_threads = []
+var costumepolygons : Array
 
 func events_search() -> void:
 	for block in data.blocks:
@@ -131,14 +133,16 @@ func evaluate_input(arg):
 			
 func fix_costume() -> void:
 	var costumefilename
+	var collisionpoly = $Collision/CollisionPolygon2D
 	if data.costumes[costumes.frame].has("md5ext"):
 		costumefilename = data.costumes[costumes.frame].md5ext
 	else:
 		costumefilename = data.costumes[costumes.frame].assetId+".png"
+	var textureframe:ImageTexture = costumes.sprite_frames.get_frame_texture("default",costumes.frame)
 	if str(costumefilename.get_extension()) == "svg":
 		costumes.position = Vector2(
-						costumes.sprite_frames.get_frame_texture("default",costumes.frame).get_width()*.5,
-						costumes.sprite_frames.get_frame_texture("default",costumes.frame).get_height()*.5  # Fix: Use -1 instead of 0
+						textureframe.get_width()*.5,
+						textureframe.get_height()*.5  # Fix: Use -1 instead of 0
 					)
 		costumes.offset = Vector2(
 						data.costumes[costumes.frame].rotationCenterX * -1,
@@ -146,8 +150,30 @@ func fix_costume() -> void:
 					)
 	if data.costumes[costumes.frame].dataFormat == "svg":
 		costumes.scale = Vector2(1,1)
+		collisionpoly.scale = Vector2(1,1)
+		
+		collisionpoly.position = Vector2(
+						textureframe.get_width()*-.5,
+						textureframe.get_height()*-.5  # Fix: Use -1 instead of 0
+					)
 	elif data.costumes[costumes.frame].dataFormat == "png":
 		costumes.scale = Vector2(0.5,0.5)
+		collisionpoly.scale = Vector2(0.5,0.5)
+		
+		collisionpoly.position = Vector2(
+						textureframe.get_width()*-.25,
+						textureframe.get_height()*-.25  # Fix: Use -1 instead of 0
+					)
+					
+	if textureframe != null:
+		var polygons: Array = costumepolygons[costumes.frame]
+		collisionpoly.polygon = polygons
+		if visible:
+			collisionpoly.disabled = false
+		else:
+			collisionpoly.disabled = true
+
+	#print(SpriteCol.opaque_to_polygons(Rect2(Vector2(100,100), textureframe.get_size())))
 
 func operator_lt(inputs, _fields):
 	var OPERAND1 = check_number(evaluate_input(inputs.OPERAND1))
@@ -348,9 +374,12 @@ func sensing_keypressed(inputs, _fields):
 	return false
 func sensing_keyoptions(_inputs, fields):
 	return fields.KEY_OPTION[0]
-#func sensing_touchingobject(_inputs, _fields):
-#	return true
-
+func sensing_touchingobject(inputs, fields):
+	print(evaluate_input([3,inputs.TOUCHINGOBJECTMENU]))
+	print(fields)
+	print(collision.has_overlapping_bodies())
+	return false
+func sensing_touchingobjectmenu(inputs, fields): return fields.TOUCHINGOBJECTMENU[0]
 func data_changevariableby(inputs, fields):
 	var variable = getvariable(fields.VARIABLE[1])
 	variable[1] = str(check_number(variable[1])+check_number(evaluate_input((inputs.VALUE))))
@@ -358,14 +387,15 @@ func data_setvariableto(inputs, fields):
 	var variable = getvariable(fields.VARIABLE[1])
 	variable[1] = evaluate_input((inputs.VALUE))
 
-func execute_broadcast(broadcast) -> void:
+func execute_broadcast(broadcast):# -> void:
 	#for receivers in broadcast_receivers:
 	if broadcast_receivers.has(broadcast):
+		print("SHOULD")
 		for receiver in broadcast_receivers[broadcast]:
 			var thread = Thread.new()
 			thread.start(start.bind(receiver,"",-1))
 			thread_events.append(thread)
-	pass
+	#return "HELLPPP"
 
 func getvariable(variable):
 	if data.variables.has(variable):
@@ -380,3 +410,11 @@ func _exit_tree() -> void:
 		if thread.is_alive():
 			thread.wait_to_finish()
 	thread_events.clear()
+
+
+func _on_collision_area_entered(area: Area2D) -> void:
+	print("blah")
+
+
+func _on_collision_body_entered(body: Node2D) -> void:
+	print("blah")

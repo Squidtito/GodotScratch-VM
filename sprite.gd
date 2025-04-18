@@ -1,10 +1,12 @@
 extends Node2D
 @onready var costumes = $Costumes
 @onready var Stage = $'../Stage'
+@onready var root = $'../'
 var costume_names : Array = []
 var data : Dictionary
 var flagclicked : Array = []
 var thread_events : Array = []
+var not_deferred : Array = ["control_repeat", "control_forever"]
 var broadcast_receivers : Dictionary = {}
 var start_as_a_clone : Array = []
 var sounds : Dictionary = {}
@@ -52,25 +54,30 @@ func start(event, loop:String="", repeattimes:int=0, nextblock:bool=true):
 			times+=1
 			while 1:
 				block_data = data.blocks[current_block]
-				call_deferred(block_data.opcode, block_data.inputs,block_data.fields)
+				if has_method(block_data.opcode):
+					if not_deferred.has(block_data.opcode): await call(block_data.opcode, block_data.inputs,block_data.fields)
+					else: call_deferred(block_data.opcode, block_data.inputs,block_data.fields)
+				else:
+					#pass
+					print("Unimplemented block "+block_data.opcode+"\nInputs: "+str(block_data.inputs)+"\nFields: "+str(block_data.fields))
 				#print(block_data)
 				#callv(block_data.opcode, [block_data.inputs,block_data.fields])
 				match block_data.opcode:
 					"sound_playuntildone":
 						sound_play(block_data.inputs,block_data.fields)
-						var soundnode : AudioStreamPlayer = get_node_or_null(str(sounds.get(data.blocks[block_data.inputs.SOUND_MENU[1]].fields.SOUND_MENU[0])))
+						var soundnode : AudioStreamPlayer = get_node_or_null(str(sounds.get(evaluate_input(block_data.inputs.SOUND_MENU))))
 						if soundnode != null:
 							await get_tree().create_timer(soundnode.stream.get_length()).timeout
 					"motion_glidesecstoxy":
 						await get_tree().create_timer(float(evaluate_input(block_data.inputs.SECS))).timeout
 					"control_wait":
 						await get_tree().create_timer(clampf(float(evaluate_input(block_data.inputs.DURATION)),0.03,9999999999)).timeout
-					"control_repeat":
-						await start(block_data.inputs.SUBSTACK[1],block_data.inputs.SUBSTACK[1], int(evaluate_input(block_data.inputs.TIMES)))
-					"control_if":
-						var statement = data.blocks[block_data.inputs.CONDITION[1]]
-						if callv(statement.opcode, [statement.inputs, statement.fields]):
-							await start(block_data.inputs.SUBSTACK[1], "", -1,false)
+					#"control_repeat":
+					#	await start(block_data.inputs.SUBSTACK[1],block_data.inputs.SUBSTACK[1], int(evaluate_input(block_data.inputs.TIMES)))
+					#"control_if":
+					#	var statement = data.blocks[block_data.inputs.CONDITION[1]]
+					#	if callv(statement.opcode, [statement.inputs, statement.fields]):
+					#		await start(block_data.inputs.SUBSTACK[1], "", -1,false)
 				if block_data.next == null:
 					if block_data.opcode == "control_forever":
 						current_block = block_data.inputs.SUBSTACK[1]
@@ -90,7 +97,7 @@ func start(event, loop:String="", repeattimes:int=0, nextblock:bool=true):
 					break
 			#times+=1
 			if nextblock:
-				await Engine.get_main_loop().process_frame
+				await get_tree().process_frame
 func check_number(NUM) -> Variant:
 	match NUM:
 		
@@ -100,7 +107,8 @@ func check_number(NUM) -> Variant:
 			NUM = "0"
 		true:
 			NUM = "1"
-	
+		_:
+			NUM = str(NUM)
 	if NUM.is_valid_int():
 		NUM = int(NUM)
 	elif NUM.is_valid_float():
@@ -242,8 +250,12 @@ func operator_mathop(inputs, fields) -> String:
 	return "0"
 func control_wait(_inputs, _fields) -> void: pass
 func control_forever(_inputs, _fields) -> void: pass
-func control_repeat(_inputs, _fields) -> void: pass
-func control_if(_inputs, _fields)  -> void: pass
+func control_repeat(inputs, _fields) -> void:
+	await start(inputs.SUBSTACK[1],inputs.SUBSTACK[1], int(evaluate_input(inputs.TIMES)))
+func control_if(inputs, fields)  -> void:
+	var statement = data.blocks[inputs.CONDITION[1]]
+	if callv(statement.opcode, [statement.inputs, statement.fields]):
+			await start(inputs.SUBSTACK[1], "", -1,false)
 func control_create_clone_of(inputs, _fields) -> void:
 	var menu = evaluate_input(inputs.CLONE_OPTION)
 	if menu == "_myself_":
@@ -258,10 +270,15 @@ func control_create_clone_of(inputs, _fields) -> void:
 		clone.data.merge(data.duplicate(true))
 		clone.name = name+"_clone"+str(randi_range(1,99999))
 		clone.start_as_a_clone = start_as_a_clone
-		$'../'.add_child(clone)
-		$'../'.add_sprite_to_layer(clone,z_index+1)
+		root.add_child(clone)
+		root.add_sprite_to_layer(clone,z_index+1)
 		#print(is_clone)
 func control_create_clone_of_menu(_inputs, fields) -> String: return fields.CLONE_OPTION[0]
+func control_stop(inputs, fields):
+	match fields.STOP_OPTION[0]:
+		"all":
+			get_tree().quit()
+
 func motion_changexby(inputs, _fields) -> void:
 	position.x += check_number(evaluate_input(inputs.DX))
 func motion_changeyby(inputs, _fields) -> void:
@@ -313,9 +330,9 @@ func looks_gotofrontback(_inputs, fields) -> void:
 	var type = fields.FRONT_BACK[0]
 	match type:
 		"front":
-			$'../'.change_sprite_layer(1, self)
+			root.change_sprite_layer(1, self)
 		"back":
-			$'../'.change_sprite_layer(0, self)
+			root.change_sprite_layer(0, self)
 func looks_costumenumbername(_inputs, fields) -> String:
 	if fields.NUMBER_NAME[0] == "number":
 		return str(costumes.frame+1)
@@ -350,17 +367,26 @@ func looks_changesizeby(inputs, _fields) -> void:
 	scale += Vector2(1,1)*(float(evaluate_input(inputs.CHANGE))*.01)
 	
 func event_broadcast(inputs, _fields) -> void:
-	$'../'.broadcast(evaluate_input(inputs.BROADCAST_INPUT))
+	#print(inputs)
+	#print(evaluate_input(inputs.BROADCAST_INPUT))
+	root.call_deferred("broadcast", evaluate_input(inputs.BROADCAST_INPUT))
+	#root.broadcast(evaluate_input(inputs.BROADCAST_INPUT))
 func event_broadcastandwait(inputs, _fields) -> void: # need to make work as intended
-	$'../'.broadcast(inputs.BROADCAST_INPUT[1][2])
+	root.broadcast(inputs.BROADCAST_INPUT[1][2])
 
 func sound_playuntildone(_inputs, _fields) -> void:
 	pass
 func sound_play(inputs, _fields) -> void: #Have to adjust this whenever I feel it it
-	var sound = get_node_or_null(str(sounds.get(data.blocks[inputs.SOUND_MENU[1]].fields.SOUND_MENU[0])))
+	pass
+	print("WHYY")
+	print(inputs.SOUND_MENU)
+	print(evaluate_input(inputs.SOUND_MENU))
+	print(name)
+	print(sounds.has(evaluate_input(inputs.SOUND_MENU)))
+	var sound = get_node_or_null(str(sounds.get(evaluate_input(inputs.SOUND_MENU))))
 	if sound != null:
 		sound.play()
-
+func sound_sounds_menu(_inputs, fields): return fields.SOUND_MENU[0]
 func sensing_mousedown(_inputs, _fields) -> bool:
 	return Input.is_action_pressed("mouse down")
 func sensing_mousex(_inputs, _fields) -> String:
@@ -368,9 +394,9 @@ func sensing_mousex(_inputs, _fields) -> String:
 func sensing_mousey(_inputs, _fields) -> String:
 	return str(-get_global_mouse_position().y)
 func sensing_timer(_inputs, _fields) -> String:
-	return str($'../'.time_elapsed)
+	return str(root.time_elapsed)
 func sensing_resettimer(_inputs, _fields) -> void:
-	$'../'.time_start = Time.get_unix_time_from_system()
+	root.time_start = Time.get_unix_time_from_system()
 func sensing_keypressed(inputs, _fields) -> bool:
 	if Input.is_anything_pressed():
 		var input = evaluate_input([3,inputs.KEY_OPTION])

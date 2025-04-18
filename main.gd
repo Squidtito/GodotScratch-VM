@@ -1,4 +1,5 @@
 extends Node2D
+@onready var stage = $'Stage'
 var reader:ZIPReader
 var sb3
 var json
@@ -8,7 +9,7 @@ var time_elapsed = 0
 var sprite_order = []
 
 func _init() -> void:
-	
+	 
 	reader = ZIPReader.new()
 	sb3 = reader.open("res://Project.sb3")
 	json = reader.read_file("project.json").get_string_from_utf8()
@@ -20,6 +21,7 @@ func _init() -> void:
 func _ready() -> void:
 	var sprite_order_reversed = sprite_order
 	sprite_order_reversed.reverse()
+	#await get_tree().create_timer(1).timeout
 	get_node("Stage").begin()
 	for sprite in sprite_order:
 		get_node(str(sprite)).begin()
@@ -27,7 +29,6 @@ func create_sprites():
 	for i in json.targets.size()-1:
 		sprite_order.append("")
 	for target in json.targets:
-		if 1:
 			var Sprite = preload("res://Sprite.tscn").instantiate()
 			var Costumes:AnimatedSprite2D = Sprite.get_node("Costumes")
 			Costumes.set_sprite_frames(SpriteFrames.new())
@@ -58,12 +59,16 @@ func create_sprites():
 				if str(audio.md5ext).get_extension() == "wav":
 					sound = AudioStreamWAV.new()
 					sound.format=AudioStreamWAV.FORMAT_16_BITS
+					print(audio.md5ext)
+					#sound.load_from_buffer(soundfile)
+					#print(sound.data)
+					sound.data = soundfile
 				elif str(audio.md5ext).get_extension() == "mp3":
 					sound = AudioStreamMP3.new()
+				sound.data = soundfile
 				var node = AudioStreamPlayer.new()
 				node.name = audio.name
 				node.stream=sound
-				sound.data = soundfile
 				Sprite.add_child(node)
 				Sprite.sounds.get_or_add(StringName(audio.name),node.name)
 			Sprite.data = target
@@ -85,30 +90,37 @@ func add_sprite_to_layer(Sprite, layer):
 	update_sprite_layers()
 	
 func change_sprite_layer(type,Sprite):
-	if sprite_order.size() == 2: #For the life of me I cannot figure out why it messes up when there's only two sprites, so I'm making this disgusting workaround
-		if type == 0:
-			if not sprite_order[0] == Sprite.name: sprite_order.reverse()
-		if type == 1:
-			if not sprite_order[1] == Sprite.name: sprite_order.reverse()
-	else:
-		sprite_order.remove_at(Sprite.z_index)
-		if type == 0: #go to de back
-			sprite_order.insert(0,Sprite.name)
-		elif type == 1: #go to de front
-			sprite_order.insert(sprite_order.size()-1,Sprite.name)
+	if 0:
+		if sprite_order.size() == 2: #For the life of me I cannot figure out why it messes up when there's only two sprites, so I'm making this disgusting workaround
+			if type == 0:
+				if not sprite_order[0] == Sprite.name: sprite_order.reverse()
+			if type == 1:
+				if not sprite_order[1] == Sprite.name: sprite_order.reverse()
+		else:
+			sprite_order.remove_at(Sprite.z_index)
+			if type == 0: #go to de back
+				sprite_order.insert(0,Sprite.name)
+			elif type == 1: #go to de front
+				sprite_order.insert(sprite_order.size()-1,Sprite.name)
 	update_sprite_layers()
 	
 func update_sprite_layers():
 	var index = 0
 	for sprite in sprite_order:
-		get_node(str(sprite)).z_index = index
+		get_node(NodePath(sprite)).z_index = index
 		index+=1
 func broadcast(sendbroadcast):
 	var sprite_order_reversed = sprite_order
 	sprite_order_reversed.reverse()
-	$Stage.execute_broadcast(sendbroadcast)
+	stage.execute_broadcast(sendbroadcast)
 	for sprite in sprite_order:
-		get_node(str(sprite)).execute_broadcast(sendbroadcast)
+		#if has_node(NodePath(sprite)):
+			print("binge")
+			print(sprite)
+			#call_deferred("get_node", str(sprite)).execute_broadcast(sendbroadcast)
+			print(get_children())
+			#get_node(str(sprite)).execute_broadcast(sendbroadcast)
+			get_node(NodePath(sprite)).call_deferred("execute_broadcast",sendbroadcast)
 
 func _process(_delta):
 	time_now = Time.get_unix_time_from_system()

@@ -10,7 +10,7 @@ var sprite_order = []
 func _init() -> void:
 	
 	reader = ZIPReader.new()
-	sb3 = reader.open("res://Project.sb3")
+	sb3 = reader.open("res://sb3/eatyourbody.sb3")
 	json = reader.read_file("project.json").get_string_from_utf8()
 	json = JSON.parse_string(json)
 	

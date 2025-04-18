@@ -91,8 +91,7 @@ func start(event, loop:String="", repeattimes:int=0, nextblock:bool=true):
 			#times+=1
 			if nextblock:
 				await Engine.get_main_loop().process_frame
-func check_number(NUM):
-	if NUM == null: NUM = "0"
+func check_number(NUM) -> Variant:
 	match NUM:
 		
 		null:
@@ -110,7 +109,7 @@ func check_number(NUM):
 			NUM = int(NUM)
 	else: NUM = 0
 	return NUM
-func evaluate_input(arg):
+func evaluate_input(arg) -> Variant:
 	match int(arg[0]):
 		1:
 			if typeof(arg[1]) == TYPE_ARRAY:
@@ -138,6 +137,7 @@ func evaluate_input(arg):
 			if execute == null: #if the function doesn't exist or returns null, this will at least kinda help not crash the entire project
 				return "0"
 			return execute
+	return null
 			
 func fix_costume() -> void:
 	var costumefilename
@@ -159,56 +159,56 @@ func fix_costume() -> void:
 	elif data.costumes[costumes.frame].dataFormat == "png":
 		costumes.scale = Vector2(0.5,0.5)
 
-func operator_lt(inputs, _fields):
+func operator_lt(inputs, _fields) -> bool:
 	var OPERAND1 = check_number(evaluate_input(inputs.OPERAND1))
 	var OPERAND2 = check_number(evaluate_input(inputs.OPERAND2))
 	if OPERAND1 < OPERAND2: return true
 	return false
-func operator_gt(inputs, _fields):
+func operator_gt(inputs, _fields) -> bool:
 	var OPERAND1 = check_number(evaluate_input(inputs.OPERAND1))
 	var OPERAND2 = check_number(evaluate_input(inputs.OPERAND2))
 	
 	if OPERAND1 > OPERAND2: return true
 	return false
-func operator_equals(inputs, _fields):
+func operator_equals(inputs, _fields) -> bool:
 	var OPERAND1 = check_number(evaluate_input(inputs.OPERAND1))
 	var OPERAND2 = check_number(evaluate_input(inputs.OPERAND2))
 	
 	if OPERAND1 == OPERAND2: return true
 	return false
-func operator_random(inputs, _fields):
+func operator_random(inputs, _fields) -> Variant:
 	var FROM = check_number(evaluate_input(inputs.FROM))
 	var TO = check_number(evaluate_input(inputs.TO))
 	if typeof(FROM) == TYPE_FLOAT or typeof(TO) == TYPE_FLOAT:
 		return str(randf_range(FROM,TO))
 	else:
 		return str(randi_range(FROM,TO))
-func operator_not(inputs, _fields):
+func operator_not(inputs, _fields) -> bool:
 	var block = data.blocks[inputs.OPERAND[1]]
 	return not callv(block.opcode,[block.inputs,block.fields])
-func operator_contains(inputs, _fields):
+func operator_contains(inputs, _fields) -> bool:
 	var STRING1:String = evaluate_input(inputs.STRING1)
 	var STRING2:String = evaluate_input(inputs.STRING2)
 	return STRING1.contains(STRING2)
-func operator_add(inputs, _fields):
+func operator_add(inputs, _fields) -> String:
 	var NUM1 = check_number(evaluate_input(inputs.NUM1))
 	var NUM2 = check_number(evaluate_input(inputs.NUM2))
 	return str(NUM1+NUM2)
-func operator_subtract(inputs, _fields):
+func operator_subtract(inputs, _fields) -> String:
 	var NUM1 = check_number(evaluate_input(inputs.NUM1))
 	var NUM2 = check_number(evaluate_input(inputs.NUM2))
 	return str(NUM1-NUM2)
-func operator_multiply(inputs, _fields):
+func operator_multiply(inputs, _fields) -> String:
 	var NUM1 = check_number(evaluate_input(inputs.NUM1))
 	var NUM2 = check_number(evaluate_input(inputs.NUM2))
 	return str(NUM1*NUM2)
-func operator_divide(inputs, _fields):
+func operator_divide(inputs, _fields) -> String:
 	var NUM1 = check_number(evaluate_input(inputs.NUM1))
 	var NUM2 = check_number(evaluate_input(inputs.NUM2))
 	return str(NUM1/NUM2)
-func operator_round(inputs, _fields):
+func operator_round(inputs, _fields) -> String:
 	return str(round(check_number(evaluate_input(inputs.NUM))))
-func operator_mathop(inputs, fields):
+func operator_mathop(inputs, fields) -> String:
 	var NUM = check_number(evaluate_input(inputs.NUM))
 	match fields.OPERATOR[0]:
 		"abs":
@@ -226,25 +226,25 @@ func operator_mathop(inputs, fields):
 		"tan":
 			return str(tan(NUM))
 		"asin":
-			return rad_to_deg(asin(NUM))
+			return str(rad_to_deg(asin(NUM)))
 		"acos":
-			return rad_to_deg(acos(NUM))
+			return str(rad_to_deg(acos(NUM)))
 		"atan":
-			return rad_to_deg(atan(NUM))
+			return str(rad_to_deg(atan(NUM)))
 		"ln":
 			return str(log(NUM))
 		"log":
-			return log(NUM) / log(10)
+			return str(log(NUM) / log(10))
 		"e ^":
-			return exp(log(NUM))
+			return str(exp(log(NUM)))
 		"10 ^":
 			return str(pow(NUM,10))
-	
+	return "0"
 func control_wait(_inputs, _fields) -> void: pass
 func control_forever(_inputs, _fields) -> void: pass
 func control_repeat(_inputs, _fields) -> void: pass
 func control_if(_inputs, _fields)  -> void: pass
-func control_create_clone_of(inputs, _fields):
+func control_create_clone_of(inputs, _fields) -> void:
 	var menu = evaluate_input(inputs.CLONE_OPTION)
 	if menu == "_myself_":
 		#print(is_clone)
@@ -261,13 +261,13 @@ func control_create_clone_of(inputs, _fields):
 		$'../'.add_child(clone)
 		$'../'.add_sprite_to_layer(clone,z_index+1)
 		#print(is_clone)
-func control_create_clone_of_menu(_inputs, fields): return fields.CLONE_OPTION[0]
-func motion_changexby(inputs, _fields):
+func control_create_clone_of_menu(_inputs, fields) -> String: return fields.CLONE_OPTION[0]
+func motion_changexby(inputs, _fields) -> void:
 	position.x += check_number(evaluate_input(inputs.DX))
-func motion_changeyby(inputs, _fields):
+func motion_changeyby(inputs, _fields) -> void:
 	position.y -= check_number(evaluate_input(inputs.DY))
-func motion_xposition(_inputs, _fields): return str(position.x)
-func motion_yposition(_inputs, _fields): return str(-position.y)
+func motion_xposition(_inputs, _fields) -> void: return str(position.x)
+func motion_yposition(_inputs, _fields) -> void: return str(-position.y)
 func motion_pointindirection(inputs, _fields) -> void:
 	rotation_degrees = check_number(evaluate_input(inputs.DIRECTION))-90
 func motion_turnright(inputs, _fields) -> void:
@@ -309,16 +309,17 @@ func motion_glidesecstoxy(inputs, _fields) -> void:
 			break
 
 	
-func looks_gotofrontback(_inputs, fields):
+func looks_gotofrontback(_inputs, fields) -> void:
 	var type = fields.FRONT_BACK[0]
 	match type:
 		"front":
 			$'../'.change_sprite_layer(1, self)
 		"back":
 			$'../'.change_sprite_layer(0, self)
-func looks_costumenumbername(_inputs, fields):
+func looks_costumenumbername(_inputs, fields) -> String:
 	if fields.NUMBER_NAME[0] == "number":
 		return str(costumes.frame+1)
+	return "0"
 func looks_nextcostume(_inputs, _fields) -> void:
 	if costumes.frame == costumes.sprite_frames.get_frame_count("default")-1:
 		costumes.frame=0
@@ -328,9 +329,9 @@ func looks_nextcostume(_inputs, _fields) -> void:
 func looks_switchcostumeto(inputs, _fields) -> void:
 	costumes.frame=costume_names.find(evaluate_input(inputs.COSTUME))
 	fix_costume()
-func looks_size(_inputs, _fields):
+func looks_size(_inputs, _fields) -> String:
 	return str(scale.x*100)
-func looks_costume(_inputs, fields):
+func looks_costume(_inputs, fields) -> String:
 	return fields.COSTUME[0]
 func looks_seteffectto(inputs, fields) -> void:
 	if fields.EFFECT[0] == "GHOST":
@@ -338,7 +339,7 @@ func looks_seteffectto(inputs, fields) -> void:
 func looks_changeeffectby(inputs, fields) -> void:
 	if fields.EFFECT[0] == "GHOST":
 		modulate.a -= float(evaluate_input(inputs.CHANGE))*.01
-func looks_cleargraphiceffects(_inputs, _fields): modulate = Color(1,1,1,1)
+func looks_cleargraphiceffects(_inputs, _fields) -> void: modulate = Color(1,1,1,1)
 func looks_hide(_inputs, _fields) -> void:
 	visible = false
 func looks_show(_inputs, _fields) -> void:
@@ -355,22 +356,22 @@ func event_broadcastandwait(inputs, _fields) -> void: # need to make work as int
 
 func sound_playuntildone(_inputs, _fields) -> void:
 	pass
-func sound_play(inputs, _fields): #Have to adjust this whenever I feel it it
+func sound_play(inputs, _fields) -> void: #Have to adjust this whenever I feel it it
 	var sound = get_node_or_null(str(sounds.get(data.blocks[inputs.SOUND_MENU[1]].fields.SOUND_MENU[0])))
 	if sound != null:
 		sound.play()
 
-func sensing_mousedown(_inputs, _fields):
+func sensing_mousedown(_inputs, _fields) -> bool:
 	return Input.is_action_pressed("mouse down")
-func sensing_mousex(_inputs, _fields):
+func sensing_mousex(_inputs, _fields) -> String:
 	return str(get_global_mouse_position().x)
-func sensing_mousey(_inputs, _fields):
+func sensing_mousey(_inputs, _fields) -> String:
 	return str(-get_global_mouse_position().y)
-func sensing_timer(_inputs, _fields):
+func sensing_timer(_inputs, _fields) -> String:
 	return str($'../'.time_elapsed)
-func sensing_resettimer(_inputs, _fields):
+func sensing_resettimer(_inputs, _fields) -> void:
 	$'../'.time_start = Time.get_unix_time_from_system()
-func sensing_keypressed(inputs, _fields):
+func sensing_keypressed(inputs, _fields) -> bool:
 	if Input.is_anything_pressed():
 		var input = evaluate_input([3,inputs.KEY_OPTION])
 		if input == "any":
@@ -378,17 +379,17 @@ func sensing_keypressed(inputs, _fields):
 		elif Input.is_action_pressed(input):
 			return true
 	return false
-func sensing_keyoptions(_inputs, fields):
+func sensing_keyoptions(_inputs, fields) -> String:
 	return fields.KEY_OPTION[0]
-func sensing_username(_inputs, _fields):
+func sensing_username(_inputs, _fields) -> String:
 	return "GodotScratch"
 #func sensing_touchingobject(_inputs, _fields):
 #	return true
 
-func data_changevariableby(inputs, fields):
+func data_changevariableby(inputs, fields) -> void:
 	var variable = getvariable(fields.VARIABLE[1])
 	variable[1] = str(check_number(variable[1])+check_number(evaluate_input((inputs.VALUE))))
-func data_setvariableto(inputs, fields):
+func data_setvariableto(inputs, fields)  -> void:
 	var variable = getvariable(fields.VARIABLE[1])
 	variable[1] = evaluate_input((inputs.VALUE))
 
@@ -401,7 +402,7 @@ func execute_broadcast(broadcast) -> void:
 			thread_events.append(thread)
 	pass
 
-func getvariable(variable):
+func getvariable(variable) -> Array:
 	#print(variable)
 	if data.variables.has(variable):
 		return data.variables[variable]

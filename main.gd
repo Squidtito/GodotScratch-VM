@@ -79,7 +79,11 @@ func create_sprites():
 				Sprite.scale = Vector2(1,1)*(float(Sprite.data.size)*.01)
 			Sprite.events_search()
 			add_child(Sprite)
-			
+		
+func add_sprite_to_layer(Sprite, layer):
+	sprite_order.insert(layer,Sprite.name)
+	update_sprite_layers()
+	
 func change_sprite_layer(type,Sprite):
 	if sprite_order.size() == 2: #For the life of me I cannot figure out why it messes up when there's only two sprites, so I'm making this disgusting workaround
 		if type == 0:

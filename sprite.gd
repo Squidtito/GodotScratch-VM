@@ -2,12 +2,14 @@ extends Node2D
 @onready var costumes = $Costumes
 @onready var Stage = $'../Stage'
 var costume_names : Array = []
-var data
+var data : Dictionary
 var flagclicked : Array = []
 var thread_events : Array = []
 var broadcast_receivers : Dictionary = {}
+var start_as_a_clone : Array = []
 var sounds : Dictionary = {}
-var active_threads = []
+var active_threads : Array = []
+var is_clone : bool = false
 
 func events_search() -> void:
 	for block in data.blocks:
@@ -22,9 +24,16 @@ func events_search() -> void:
 					if not broadcast_receivers.has(block_data.fields.BROADCAST_OPTION[1]):
 						broadcast_receivers.get_or_add(block_data.fields.BROADCAST_OPTION[1], [])
 					broadcast_receivers[block_data.fields.BROADCAST_OPTION[1]].append(block)
-
+			elif block_data.opcode == "control_start_as_clone":
+				if block_data.next != null:
+					start_as_a_clone.append(block)
 func _ready() -> void:
 	fix_costume()
+	if is_clone:
+		#print("AHH")
+		for block in start_as_a_clone:
+			thread_events.append(Thread.new())
+			thread_events[thread_events.size()-1].start(start.bind(block, "", -1))
 func begin():
 	for event in thread_events.size():
 		thread_events[event].start(start.bind(flagclicked[event], "", -1))
@@ -32,8 +41,8 @@ func begin():
 #@warning_ignore("")
 func start(event, loop:String="", repeattimes:int=0, nextblock:bool=true):
 	var active : bool = true
-	var current_block
-	var block_data
+	var current_block: String
+	var block_data : Dictionary
 	var times: int = 0
 	if loop == "" and nextblock:
 		current_block = data.blocks[event].next
@@ -44,6 +53,7 @@ func start(event, loop:String="", repeattimes:int=0, nextblock:bool=true):
 			while 1:
 				block_data = data.blocks[current_block]
 				call_deferred(block_data.opcode, block_data.inputs,block_data.fields)
+				#print(block_data)
 				#callv(block_data.opcode, [block_data.inputs,block_data.fields])
 				match block_data.opcode:
 					"sound_playuntildone":
@@ -65,7 +75,7 @@ func start(event, loop:String="", repeattimes:int=0, nextblock:bool=true):
 					if block_data.opcode == "control_forever":
 						current_block = block_data.inputs.SUBSTACK[1]
 						
-						await start(block_data.inputs.SUBSTACK[1],block_data.inputs.SUBSTACK[1],-1)
+						await start(current_block,current_block,-1)
 					#	loop = current_block
 					else:
 						if loop != "" and times != repeattimes:
@@ -234,6 +244,24 @@ func control_wait(_inputs, _fields) -> void: pass
 func control_forever(_inputs, _fields) -> void: pass
 func control_repeat(_inputs, _fields) -> void: pass
 func control_if(_inputs, _fields)  -> void: pass
+func control_create_clone_of(inputs, _fields):
+	var menu = evaluate_input(inputs.CLONE_OPTION)
+	if menu == "_myself_":
+		#print(is_clone)
+		var clone = self.duplicate()
+		clone.is_clone = true
+		clone.costume_names = costume_names
+		#print(is_clone)
+		clone.sounds = sounds
+		clone.broadcast_receivers = broadcast_receivers
+		#Dictionary
+		clone.data.merge(data.duplicate(true))
+		clone.name = name+"_clone"+str(randi_range(1,99999))
+		clone.start_as_a_clone = start_as_a_clone
+		$'../'.add_child(clone)
+		$'../'.add_sprite_to_layer(clone,z_index+1)
+		#print(is_clone)
+func control_create_clone_of_menu(_inputs, fields): return fields.CLONE_OPTION[0]
 func motion_changexby(inputs, _fields):
 	position.x += check_number(evaluate_input(inputs.DX))
 func motion_changeyby(inputs, _fields):
@@ -374,6 +402,7 @@ func execute_broadcast(broadcast) -> void:
 	pass
 
 func getvariable(variable):
+	#print(variable)
 	if data.variables.has(variable):
 		return data.variables[variable]
 	else:

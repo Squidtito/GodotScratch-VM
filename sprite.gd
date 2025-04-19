@@ -238,7 +238,13 @@ func control_repeat(inputs, _fields) -> void:
 func control_if(inputs, fields)  -> void:
 	var statement = data.blocks[inputs.CONDITION[1]]
 	if callv(statement.opcode, [statement.inputs, statement.fields]):
-			await start(inputs.SUBSTACK[1], "", -1,false)
+		await start(inputs.SUBSTACK[1], "", -1,false)
+func control_if_else(inputs, fields)  -> void:
+	var statement = data.blocks[inputs.CONDITION[1]]
+	if callv(statement.opcode, [statement.inputs, statement.fields]):
+		await start(inputs.SUBSTACK[1], "", -1,false)
+	else:
+		await start(inputs.SUBSTACK2[1], "", -1,false)
 func control_create_clone_of(inputs, _fields) -> void:
 	var menu = evaluate_input(inputs.CLONE_OPTION)
 	if menu == "_myself_":

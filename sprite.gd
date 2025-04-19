@@ -194,6 +194,12 @@ func operator_random(inputs, _fields) -> Variant:
 func operator_not(inputs, _fields) -> bool:
 	var block = data.blocks[inputs.OPERAND[1]]
 	return not callv(block.opcode,[block.inputs,block.fields])
+func operator_and(inputs, _fields) -> bool:
+	print(inputs)
+	var block1 = data.blocks[inputs.OPERAND1[1]]
+	var block2 = data.blocks[inputs.OPERAND2[1]]
+	print("gah")
+	return callv(block1.opcode,[block1.inputs,block1.fields]) and callv(block2.opcode,[block2.inputs,block2.fields])
 func operator_contains(inputs, _fields) -> bool:
 	var STRING1:String = evaluate_input(inputs.STRING1)
 	var STRING2:String = evaluate_input(inputs.STRING2)

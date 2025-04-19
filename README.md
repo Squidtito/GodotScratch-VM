@@ -27,4 +27,7 @@ This is a repository trying to recreate the ScratchVM within Godot
 Sorry if this README is awful, I don't know what I'm doing :D
 
 
-Sp
+
+Special thanks 
+------------
+to [CherryTheCool](https://github.com/cherrythecool) for their gdextension! Which made it possible to play non-supported wav formats! muhahaha

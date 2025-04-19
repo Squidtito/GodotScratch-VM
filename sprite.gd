@@ -352,18 +352,15 @@ func event_broadcastandwait(inputs, _fields) -> void: # need to make work as int
 
 func sound_playuntildone(inputs, fields) -> void:
 	sound_play(inputs,fields)
-	var soundnode : AudioStreamPlayer = get_node_or_null(str(sounds.get(evaluate_input(inputs.SOUND_MENU))))
-	if soundnode != null:
-		await get_tree().create_timer(soundnode.stream.get_length()).timeout
-func sound_play(inputs, _fields) -> void: #Have to adjust this whenever I feel it it
-	pass
-	print("WHYY")
-	print(inputs.SOUND_MENU)
-	print(evaluate_input(inputs.SOUND_MENU))
-	print(name)
-	print(sounds.has(evaluate_input(inputs.SOUND_MENU)))
-	var sound = get_node_or_null(str(sounds.get(evaluate_input(inputs.SOUND_MENU))))
-	if sound != null:
+	await get_tree().create_timer(sounds.get(evaluate_input(inputs.SOUND_MENU))).timeout
+func sound_play(inputs, _fields) -> void:
+	var sound_path = evaluate_input(inputs.SOUND_MENU)
+	call_deferred("_play_sound_deferred", sound_path)
+	
+	
+func _play_sound_deferred(path):
+	var sound = get_node_or_null(path)
+	if sound:
 		sound.play()
 func sound_sounds_menu(_inputs, fields): return fields.SOUND_MENU[0]
 func sensing_mousedown(_inputs, _fields) -> bool:

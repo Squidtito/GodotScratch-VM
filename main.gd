@@ -36,7 +36,6 @@ func create_sprites():
 				
 				var image = Image.new()
 				var error : Error
-				#print(costume)
 				var costumefilename
 				if costume.has("md5ext"):
 					costumefilename = costume.md5ext
@@ -65,16 +64,14 @@ func create_sprites():
 				node.name = audio.name
 				node.stream=sound
 				Sprite.add_child(node)
-				Sprite.sounds.get_or_add(StringName(audio.name),node.name)
+				Sprite.sounds.get_or_add(StringName(audio.name),node.stream.get_length())
 			Sprite.data = target
 			Sprite.name = target.name
-			#print(Sprite.data.currentCostume)
 			Costumes.frame = int(Sprite.data.currentCostume)
 			if not target.isStage:
 				Sprite.rotation_degrees = Sprite.data.direction-90
 				Sprite.visible = Sprite.data.visible
 				Sprite.position = Vector2(Sprite.data.x,-Sprite.data.y)
-				#Sprite.z_index = Sprite.data.layerOrder
 				sprite_order[Sprite.data.layerOrder-1] = Sprite.name
 				Sprite.scale = Vector2(1,1)*(float(Sprite.data.size)*.01)
 			Sprite.events_search()
@@ -109,12 +106,6 @@ func broadcast(sendbroadcast):
 	sprite_order_reversed.reverse()
 	stage.execute_broadcast(sendbroadcast)
 	for sprite in sprite_order:
-		#if has_node(NodePath(sprite)):
-			print("binge")
-			print(sprite)
-			#call_deferred("get_node", str(sprite)).execute_broadcast(sendbroadcast)
-			print(get_children())
-			#get_node(str(sprite)).execute_broadcast(sendbroadcast)
 			get_node(NodePath(sprite)).call_deferred("execute_broadcast",sendbroadcast)
 
 func _process(_delta):

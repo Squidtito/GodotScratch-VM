@@ -58,14 +58,15 @@ func create_sprites():
 				var sound
 				if str(audio.md5ext).get_extension() == "wav":
 					sound = AudioStreamWAV.new()
-					sound.format=AudioStreamWAV.FORMAT_16_BITS
-					print(audio.md5ext)
-					#sound.load_from_buffer(soundfile)
+					#sound.format=AudioStreamWAV.FORMAT_16_BITS
+					#print(audio.md5ext)
+					sound.load_from_buffer(soundfile)
 					#print(sound.data)
-					sound.data = soundfile
+					#sound.data = soundfile
 				elif str(audio.md5ext).get_extension() == "mp3":
 					sound = AudioStreamMP3.new()
-				sound.data = soundfile
+					sound.load_from_buffer(soundfile)
+				#sound.data = soundfile
 				var node = AudioStreamPlayer.new()
 				node.name = audio.name
 				node.stream=sound

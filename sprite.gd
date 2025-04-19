@@ -32,7 +32,6 @@ func events_search() -> void:
 func _ready() -> void:
 	fix_costume()
 	if is_clone:
-		#print("AHH")
 		for block in start_as_a_clone:
 			thread_events.append(Thread.new())
 			thread_events[thread_events.size()-1].start(start.bind(block, "", -1))
@@ -58,24 +57,12 @@ func start(event, loop:String="", repeattimes:int=0, nextblock:bool=true):
 					if not_deferred.has(block_data.opcode): await call(block_data.opcode, block_data.inputs,block_data.fields)
 					else: call_deferred(block_data.opcode, block_data.inputs,block_data.fields)
 				else:
-					#pass
 					print("Unimplemented block "+block_data.opcode+"\nInputs: "+str(block_data.inputs)+"\nFields: "+str(block_data.fields))
-				#print(block_data)
-				#callv(block_data.opcode, [block_data.inputs,block_data.fields])
-					#"motion_glidesecstoxy":
-					#	await get_tree().create_timer(float(evaluate_input(block_data.inputs.SECS))).timeout
-					#"control_repeat":
-					#	await start(block_data.inputs.SUBSTACK[1],block_data.inputs.SUBSTACK[1], int(evaluate_input(block_data.inputs.TIMES)))
-					#"control_if":
-					#	var statement = data.blocks[block_data.inputs.CONDITION[1]]
-					#	if callv(statement.opcode, [statement.inputs, statement.fields]):
-					#		await start(block_data.inputs.SUBSTACK[1], "", -1,false)
 				if block_data.next == null:
 					if block_data.opcode == "control_forever":
 						current_block = block_data.inputs.SUBSTACK[1]
 						
 						await start(current_block,current_block,-1)
-					#	loop = current_block
 					else:
 						if loop != "" and times != repeattimes:
 							current_block = loop
@@ -87,7 +74,6 @@ func start(event, loop:String="", repeattimes:int=0, nextblock:bool=true):
 					current_block = block_data.next
 				if active == false:
 					break
-			#times+=1
 			if nextblock:
 				await get_tree().process_frame
 func check_number(NUM) -> Variant:
@@ -148,11 +134,11 @@ func fix_costume() -> void:
 	if str(costumefilename.get_extension()) == "svg":
 		costumes.position = Vector2(
 						costumes.sprite_frames.get_frame_texture("default",costumes.frame).get_width()*.5,
-						costumes.sprite_frames.get_frame_texture("default",costumes.frame).get_height()*.5  # Fix: Use -1 instead of 0
+						costumes.sprite_frames.get_frame_texture("default",costumes.frame).get_height()*.5
 					)
 		costumes.offset = Vector2(
 						data.costumes[costumes.frame].rotationCenterX * -1,
-						data.costumes[costumes.frame].rotationCenterY * -1  # Fix: Use -1 instead of 0
+						data.costumes[costumes.frame].rotationCenterY * -1 
 					)
 	if data.costumes[costumes.frame].dataFormat == "svg":
 		costumes.scale = Vector2(1,1)
@@ -256,20 +242,16 @@ func control_if(inputs, fields)  -> void:
 func control_create_clone_of(inputs, _fields) -> void:
 	var menu = evaluate_input(inputs.CLONE_OPTION)
 	if menu == "_myself_":
-		#print(is_clone)
 		var clone = self.duplicate()
 		clone.is_clone = true
 		clone.costume_names = costume_names
-		#print(is_clone)
 		clone.sounds = sounds
 		clone.broadcast_receivers = broadcast_receivers
-		#Dictionary
 		clone.data.merge(data.duplicate(true))
 		clone.name = name+"_clone"+str(randi_range(1,99999))
 		clone.start_as_a_clone = start_as_a_clone
 		root.add_child(clone)
 		root.add_sprite_to_layer(clone,z_index+1)
-		#print(is_clone)
 func control_create_clone_of_menu(_inputs, fields) -> String: return fields.CLONE_OPTION[0]
 func control_stop(inputs, fields):
 	match fields.STOP_OPTION[0]:
@@ -364,10 +346,7 @@ func looks_changesizeby(inputs, _fields) -> void:
 	scale += Vector2(1,1)*(float(evaluate_input(inputs.CHANGE))*.01)
 	
 func event_broadcast(inputs, _fields) -> void:
-	#print(inputs)
-	#print(evaluate_input(inputs.BROADCAST_INPUT))
 	root.call_deferred("broadcast", evaluate_input(inputs.BROADCAST_INPUT))
-	#root.broadcast(evaluate_input(inputs.BROADCAST_INPUT))
 func event_broadcastandwait(inputs, _fields) -> void: # need to make work as intended
 	root.broadcast(inputs.BROADCAST_INPUT[1][2])
 
@@ -409,8 +388,6 @@ func sensing_keyoptions(_inputs, fields) -> String:
 	return fields.KEY_OPTION[0]
 func sensing_username(_inputs, _fields) -> String:
 	return "GodotScratch"
-#func sensing_touchingobject(_inputs, _fields):
-#	return true
 
 func data_changevariableby(inputs, fields) -> void:
 	var variable = getvariable(fields.VARIABLE[1])
@@ -429,12 +406,9 @@ func execute_broadcast(broadcast) -> void:
 	pass
 
 func getvariable(variable) -> Array:
-	#print(variable)
 	if data.variables.has(variable):
 		return data.variables[variable]
 	else:
-		#print($'../Stage'.data.variables)
-		#print(ba)
 		return Stage.data.variables[variable]
 
 func _exit_tree() -> void:

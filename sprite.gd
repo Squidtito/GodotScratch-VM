@@ -6,7 +6,7 @@ var costume_names : Array = []
 var data : Dictionary
 var flagclicked : Array = []
 var thread_events : Array = []
-var not_deferred : Array = ["control_repeat", "control_forever", "control_wait", "motion_glidesecstoxy", "sound_playuntildone"]
+var not_deferred : Array = ["control_repeat", "control_forever", "control_wait", "motion_glidesecstoxy", "sound_playuntildone", "control_if", "control_if_else", "control_wait_until"]
 var broadcast_receivers : Dictionary = {}
 var start_as_a_clone : Array = []
 var sounds : Dictionary = {}
@@ -176,10 +176,18 @@ func operator_and(inputs, _fields) -> bool:
 	var block1 = data.blocks[inputs.OPERAND1[1]]
 	var block2 = data.blocks[inputs.OPERAND2[1]]
 	return callv(block1.opcode,[block1.inputs,block1.fields]) and callv(block2.opcode,[block2.inputs,block2.fields])
+func operator_or(inputs, _fields) -> bool:
+	var block1 = data.blocks[inputs.OPERAND1[1]]
+	var block2 = data.blocks[inputs.OPERAND2[1]]
+	return callv(block1.opcode,[block1.inputs,block1.fields]) or callv(block2.opcode,[block2.inputs,block2.fields])
 func operator_contains(inputs, _fields) -> bool:
 	var STRING1:String = evaluate_input(inputs.STRING1)
 	var STRING2:String = evaluate_input(inputs.STRING2)
 	return STRING1.contains(STRING2)
+func operator_join(inputs, _fields) -> String:
+	var STRING1:String = evaluate_input(inputs.STRING1)
+	var STRING2:String = evaluate_input(inputs.STRING2)
+	return STRING1+STRING2
 func operator_add(inputs, _fields) -> String:
 	var NUM1 = check_number(evaluate_input(inputs.NUM1))
 	var NUM2 = check_number(evaluate_input(inputs.NUM2))
@@ -235,6 +243,11 @@ func control_wait(inputs, _fields) -> void:
 func control_forever(_inputs, _fields) -> void: pass
 func control_repeat(inputs, _fields) -> void:
 	await start(inputs.SUBSTACK[1],inputs.SUBSTACK[1], int(evaluate_input(inputs.TIMES)))
+func control_wait_until(inputs, _fields) -> void:
+	var statement = data.blocks[inputs.CONDITION[1]]
+	while not callv(statement.opcode, [statement.inputs, statement.fields]):
+		pass
+	#while not callv(statement.opcode, [statement.inputs, statement.fields]):
 func control_if(inputs, fields)  -> void:
 	var statement = data.blocks[inputs.CONDITION[1]]
 	if callv(statement.opcode, [statement.inputs, statement.fields]):

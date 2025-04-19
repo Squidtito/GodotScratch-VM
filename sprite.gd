@@ -6,7 +6,7 @@ var costume_names : Array = []
 var data : Dictionary
 var flagclicked : Array = []
 var thread_events : Array = []
-var not_deferred : Array = ["control_repeat", "control_forever"]
+var not_deferred : Array = ["control_repeat", "control_forever", "control_wait", "motion_glidesecstoxy", "sound_playuntildone"]
 var broadcast_receivers : Dictionary = {}
 var start_as_a_clone : Array = []
 var sounds : Dictionary = {}
@@ -62,16 +62,8 @@ func start(event, loop:String="", repeattimes:int=0, nextblock:bool=true):
 					print("Unimplemented block "+block_data.opcode+"\nInputs: "+str(block_data.inputs)+"\nFields: "+str(block_data.fields))
 				#print(block_data)
 				#callv(block_data.opcode, [block_data.inputs,block_data.fields])
-				match block_data.opcode:
-					"sound_playuntildone":
-						sound_play(block_data.inputs,block_data.fields)
-						var soundnode : AudioStreamPlayer = get_node_or_null(str(sounds.get(evaluate_input(block_data.inputs.SOUND_MENU))))
-						if soundnode != null:
-							await get_tree().create_timer(soundnode.stream.get_length()).timeout
-					"motion_glidesecstoxy":
-						await get_tree().create_timer(float(evaluate_input(block_data.inputs.SECS))).timeout
-					"control_wait":
-						await get_tree().create_timer(clampf(float(evaluate_input(block_data.inputs.DURATION)),0.03,9999999999)).timeout
+					#"motion_glidesecstoxy":
+					#	await get_tree().create_timer(float(evaluate_input(block_data.inputs.SECS))).timeout
 					#"control_repeat":
 					#	await start(block_data.inputs.SUBSTACK[1],block_data.inputs.SUBSTACK[1], int(evaluate_input(block_data.inputs.TIMES)))
 					#"control_if":
@@ -195,10 +187,8 @@ func operator_not(inputs, _fields) -> bool:
 	var block = data.blocks[inputs.OPERAND[1]]
 	return not callv(block.opcode,[block.inputs,block.fields])
 func operator_and(inputs, _fields) -> bool:
-	print(inputs)
 	var block1 = data.blocks[inputs.OPERAND1[1]]
 	var block2 = data.blocks[inputs.OPERAND2[1]]
-	print("gah")
 	return callv(block1.opcode,[block1.inputs,block1.fields]) and callv(block2.opcode,[block2.inputs,block2.fields])
 func operator_contains(inputs, _fields) -> bool:
 	var STRING1:String = evaluate_input(inputs.STRING1)
@@ -254,7 +244,8 @@ func operator_mathop(inputs, fields) -> String:
 		"10 ^":
 			return str(pow(NUM,10))
 	return "0"
-func control_wait(_inputs, _fields) -> void: pass
+func control_wait(inputs, _fields) -> void: 
+	await get_tree().create_timer(clampf(float(evaluate_input(inputs.DURATION)),0.03,9999999999)).timeout
 func control_forever(_inputs, _fields) -> void: pass
 func control_repeat(inputs, _fields) -> void:
 	await start(inputs.SUBSTACK[1],inputs.SUBSTACK[1], int(evaluate_input(inputs.TIMES)))
@@ -380,8 +371,11 @@ func event_broadcast(inputs, _fields) -> void:
 func event_broadcastandwait(inputs, _fields) -> void: # need to make work as intended
 	root.broadcast(inputs.BROADCAST_INPUT[1][2])
 
-func sound_playuntildone(_inputs, _fields) -> void:
-	pass
+func sound_playuntildone(inputs, fields) -> void:
+	sound_play(inputs,fields)
+	var soundnode : AudioStreamPlayer = get_node_or_null(str(sounds.get(evaluate_input(inputs.SOUND_MENU))))
+	if soundnode != null:
+		await get_tree().create_timer(soundnode.stream.get_length()).timeout
 func sound_play(inputs, _fields) -> void: #Have to adjust this whenever I feel it it
 	pass
 	print("WHYY")

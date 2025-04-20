@@ -6,7 +6,7 @@ var costume_names : Array = []
 var data : Dictionary
 var flagclicked : Array = []
 var thread_events : Array = []
-var not_deferred : Array = ["control_repeat", "control_forever", "control_wait", "motion_glidesecstoxy", "sound_playuntildone", "control_if", "control_if_else", "control_wait_until"]
+var not_deferred : Array = ["control_repeat", "control_forever", "control_wait", "motion_glidesecstoxy", "sound_playuntildone", "control_if", "control_if_else", "control_wait_until", "control_repeat_until"]
 var broadcast_receivers : Dictionary = {}
 var start_as_a_clone : Array = []
 var sounds : Dictionary = {}
@@ -238,6 +238,12 @@ func operator_mathop(inputs, fields) -> String:
 		"10 ^":
 			return str(pow(NUM,10))
 	return "0"
+func control_repeat_until(inputs, _fields):
+	var statement = data.blocks[inputs.CONDITION[1]]
+	var SUBSTACK = data.blocks[inputs.SUBSTACK[1]]
+	while not callv(statement.opcode, [statement.inputs, statement.fields]):
+		await start(inputs.SUBSTACK[1], "", -1,false)
+		await get_tree().process_frame
 func control_wait(inputs, _fields) -> void: 
 	await get_tree().create_timer(clampf(float(evaluate_input(inputs.DURATION)),0.03,9999999999)).timeout
 func control_forever(_inputs, _fields) -> void: pass
@@ -272,7 +278,7 @@ func control_create_clone_of(inputs, _fields) -> void:
 		root.add_child(clone)
 		root.add_sprite_to_layer(clone,z_index+1)
 func control_create_clone_of_menu(_inputs, fields) -> String: return fields.CLONE_OPTION[0]
-func control_stop(inputs, fields):
+func control_stop(_inputs, fields):
 	match fields.STOP_OPTION[0]:
 		"all":
 			get_tree().quit()

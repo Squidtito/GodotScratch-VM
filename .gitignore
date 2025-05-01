@@ -1,4 +1,4 @@
 # Godot 4+ specific ignores
 .godot/
 /android/
-sb3/
+sb3_2/

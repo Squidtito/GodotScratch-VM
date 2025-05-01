@@ -118,6 +118,7 @@ func evaluate_input(arg) -> Variant:
 					return str(getvariable(arg[1][2])[1])
 				block_data = data.blocks[arg[1][1]]
 			else:
+				#print(arg[1])
 				block_data = data.blocks[arg[1]]
 			var execute = callv(block_data.opcode, [block_data.inputs,block_data.fields])
 			if execute == null: #if the function doesn't exist or returns null, this will at least kinda help not crash the entire project
@@ -148,14 +149,12 @@ func fix_costume() -> void:
 func operator_lt(inputs, _fields) -> bool:
 	var OPERAND1 = check_number(evaluate_input(inputs.OPERAND1))
 	var OPERAND2 = check_number(evaluate_input(inputs.OPERAND2))
-	if OPERAND1 < OPERAND2: return true
-	return false
+	return OPERAND1 < OPERAND2
 func operator_gt(inputs, _fields) -> bool:
 	var OPERAND1 = check_number(evaluate_input(inputs.OPERAND1))
 	var OPERAND2 = check_number(evaluate_input(inputs.OPERAND2))
 	
-	if OPERAND1 > OPERAND2: return true
-	return false
+	return OPERAND1 > OPERAND2
 func operator_equals(inputs, _fields) -> bool:
 	var OPERAND1 = check_number(evaluate_input(inputs.OPERAND1))
 	var OPERAND2 = check_number(evaluate_input(inputs.OPERAND2))
@@ -287,8 +286,8 @@ func motion_changexby(inputs, _fields) -> void:
 	position.x += check_number(evaluate_input(inputs.DX))
 func motion_changeyby(inputs, _fields) -> void:
 	position.y -= check_number(evaluate_input(inputs.DY))
-func motion_xposition(_inputs, _fields) -> void: return str(position.x)
-func motion_yposition(_inputs, _fields) -> void: return str(-position.y)
+func motion_xposition(_inputs, _fields) -> String: return str(position.x)
+func motion_yposition(_inputs, _fields) -> String: return str(-position.y)
 func motion_pointindirection(inputs, _fields) -> void:
 	rotation_degrees = check_number(evaluate_input(inputs.DIRECTION))-90
 func motion_turnright(inputs, _fields) -> void:

@@ -60,6 +60,9 @@ func start(event, loop:String="", repeattimes:int=0, nextblock:bool=true):
 					print("Unimplemented block "+block_data.opcode+"\nInputs: "+str(block_data.inputs)+"\nFields: "+str(block_data.fields))
 				if block_data.next == null:
 					if block_data.opcode == "control_forever":
+						if block_data.inputs.size()<1:
+							while 1:
+								await get_tree().process_frame
 						current_block = block_data.inputs.SUBSTACK[1]
 						
 						await start(current_block,current_block,-1)
@@ -151,6 +154,7 @@ func operator_lt(inputs, _fields) -> bool:
 	var OPERAND2 = check_number(evaluate_input(inputs.OPERAND2))
 	return OPERAND1 < OPERAND2
 func operator_gt(inputs, _fields) -> bool:
+	#print("GAY")
 	var OPERAND1 = check_number(evaluate_input(inputs.OPERAND1))
 	var OPERAND2 = check_number(evaluate_input(inputs.OPERAND2))
 	
@@ -241,7 +245,8 @@ func control_repeat_until(inputs, _fields):
 	var statement = data.blocks[inputs.CONDITION[1]]
 	var SUBSTACK = data.blocks[inputs.SUBSTACK[1]]
 	while not callv(statement.opcode, [statement.inputs, statement.fields]):
-		await start(inputs.SUBSTACK[1], "", -1,false)
+		
+		await start(inputs.SUBSTACK[1], "", 1,false)
 		await get_tree().process_frame
 func control_wait(inputs, _fields) -> void: 
 	await get_tree().create_timer(clampf(float(evaluate_input(inputs.DURATION)),0.03,9999999999)).timeout
@@ -260,9 +265,11 @@ func control_if(inputs, fields)  -> void:
 func control_if_else(inputs, fields)  -> void:
 	var statement = data.blocks[inputs.CONDITION[1]]
 	if callv(statement.opcode, [statement.inputs, statement.fields]):
-		await start(inputs.SUBSTACK[1], "", -1,false)
+		if inputs.has("SUBSTACK"):
+				await start(inputs.SUBSTACK[1], "", -1,false)
 	else:
-		await start(inputs.SUBSTACK2[1], "", -1,false)
+		if inputs.has("SUBSTACK2"):
+			await start(inputs.SUBSTACK2[1], "", -1,false)
 func control_create_clone_of(inputs, _fields) -> void:
 	var menu = evaluate_input(inputs.CLONE_OPTION)
 	if menu == "_myself_":
@@ -416,6 +423,12 @@ func data_changevariableby(inputs, fields) -> void:
 func data_setvariableto(inputs, fields)  -> void:
 	var variable = getvariable(fields.VARIABLE[1])
 	variable[1] = evaluate_input((inputs.VALUE))
+func data_itemoflist(inputs, fields):
+	var INDEX = check_number(evaluate_input(inputs.INDEX))-1
+	var LIST = getlist(fields.LIST[1])[1]
+	
+	if INDEX-1>LIST.size(): return ""
+	return LIST[INDEX]
 
 func execute_broadcast(broadcast) -> void:
 	#for receivers in broadcast_receivers:
@@ -431,7 +444,11 @@ func getvariable(variable) -> Array:
 		return data.variables[variable]
 	else:
 		return Stage.data.variables[variable]
-
+func getlist(list):
+	if data.lists.has(list):
+		return data.lists[list]
+	else:
+		return Stage.data.lists[list]
 func _exit_tree() -> void:
 	for thread in thread_events:
 		if thread.is_alive():

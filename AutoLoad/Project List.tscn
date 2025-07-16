@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://b0j6bq0ylcjgg"]
+[gd_scene load_steps=3 format=3 uid="uid://b0j6bq0ylcjgg"]
 
 [ext_resource type="Script" uid="uid://bqywb1cg027dt" path="res://AutoLoad/project_list.gd" id="1_ai1gy"]
+[ext_resource type="Script" uid="uid://ci5xgu4tgpda0" path="res://AutoLoad/download_project.gd" id="2_dd2re"]
 
 [node name="ProjectList" type="Control"]
 layout_mode = 3
@@ -17,9 +18,36 @@ script = ExtResource("1_ai1gy")
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_bottom = -40.0
 grow_horizontal = 2
 grow_vertical = 2
 same_column_width = true
+
+[node name="ID" type="TextEdit" parent="CanvasLayer"]
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -41.0
+offset_right = -138.0
+grow_horizontal = 2
+grow_vertical = 0
+placeholder_text = "Project ID"
+
+[node name="Download Project" type="Button" parent="CanvasLayer"]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -139.0
+offset_top = -41.0
+grow_horizontal = 0
+grow_vertical = 0
+size_flags_horizontal = 8
+size_flags_vertical = 8
+text = "Download"
+script = ExtResource("2_dd2re")
 
 [node name="Loading" type="CanvasLayer" parent="."]
 visible = false
@@ -46,4 +74,18 @@ grow_horizontal = 2
 grow_vertical = 2
 text = "Loading"
 
+[node name="ProgressBar" type="ProgressBar" parent="Loading"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -183.0
+offset_top = 13.0
+offset_right = 184.0
+offset_bottom = 40.0
+grow_horizontal = 2
+grow_vertical = 2
+
 [connection signal="item_activated" from="CanvasLayer/ItemList" to="." method="_on_item_list_item_activated"]
+[connection signal="pressed" from="CanvasLayer/Download Project" to="CanvasLayer/Download Project" method="_on_pressed"]

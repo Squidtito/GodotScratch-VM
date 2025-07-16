@@ -84,8 +84,10 @@ func _on_pressed() -> void:
 			await get_tree().create_timer(10).timeout
 			for child in download.size():
 				get_node(str(child+1)).queue_free()
+				
+			DirAccess.make_dir_absolute("res://sb3/")
 			var writer = ZIPPacker.new()
-			writer.open("res://sb3_2/"+ID+".sb3")
+			writer.open("res://sb3/"+ID+".sb3")
 			download.append("project.json")
 			for file in download:
 				loadingbar.value += 1
